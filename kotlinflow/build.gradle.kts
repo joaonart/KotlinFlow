@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
+    `maven-publish`
 }
 
 android {
@@ -45,6 +46,12 @@ android {
     testOptions {
         unitTests.isReturnDefaultValues = true
     }
+
+    publishing {
+        singleVariant("release") {
+            withSourcesJar()
+        }
+    }
 }
 
 dependencies {
@@ -64,4 +71,41 @@ dependencies {
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(platform(libs.androidx.compose.bom))
     testImplementation(libs.androidx.compose.ui)
+}
+
+afterEvaluate {
+    publishing {
+        publications {
+            create<MavenPublication>("release") {
+                from(components["release"])
+                groupId = "com.github.joaonart"
+                artifactId = "kotlinflow"
+                version = "1.0.0"
+
+                pom {
+                    name.set("KotlinFlow")
+                    description.set("A faithful, highly optimized Android port of SwiftFlow built natively with Jetpack Compose.")
+                    url.set("https://github.com/joaonart/KotlinFlow")
+                    licenses {
+                        license {
+                            name.set("MIT License")
+                            url.set("https://opensource.org/licenses/MIT")
+                        }
+                    }
+                    developers {
+                        developer {
+                            id.set("joaonart")
+                            name.set("João Alves")
+                            email.set("joao.alves64@gmail.com")
+                        }
+                    }
+                    scm {
+                        connection.set("scm:git:git://github.com/joaonart/KotlinFlow.git")
+                        developerConnection.set("scm:git:ssh://github.com:joaonart/KotlinFlow.git")
+                        url.set("https://github.com/joaonart/KotlinFlow")
+                    }
+                }
+            }
+        }
+    }
 }
