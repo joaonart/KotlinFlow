@@ -197,3 +197,12 @@ dependencies {
   gpg --keyserver keys.openpgp.org --send-keys <KEY_ID>
   ```
   Wait 5–10 minutes for global keyserver replication before re-running the workflow.
+
+### 4. `checksum mismatch at in checksum of 20 bytes`
+- **Cause**: The passphrase entered in the `GPG_SIGNING_PASSPHRASE` secret is incorrect, has trailing spaces/newlines, or does not match the exported private key in `GPG_SIGNING_KEY`. BouncyCastle verifies the 20-byte SHA-1 hash of the decrypted key, and fails if the passphrase is not exact.
+- **Verification Command (Run locally on macOS)**:
+  Test your key and passphrase directly in your terminal:
+  ```bash
+  echo "test" | gpg --batch --yes --passphrase "YOUR_PASSPHRASE" --armor --detach-sign -u <KEY_ID>
+  ```
+  If it succeeds, update your GitHub Secret `GPG_SIGNING_PASSPHRASE` with that exact string (without extra spaces).
