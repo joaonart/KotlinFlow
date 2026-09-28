@@ -95,14 +95,19 @@ gpg --keyserver keys.openpgp.org --send-keys 9876543210ABCDEF
 
 ### 4. Export the Private Key for GitHub Actions
 
-Export the ASCII-armored private key and copy it directly to your macOS clipboard:
+You can export the private key in standard ASCII-armored format or as **Base64** (recommended, as Base64 eliminates any accidental newline/space corruption when pasting into the GitHub Web UI):
 
+**Option A (Recommended - Base64 single-line, 100% immune to newline mangling):**
 ```bash
-# Replace 9876543210ABCDEF with your actual Key ID
-gpg --armor --export-secret-keys 9876543210ABCDEF | pbcopy
+/opt/homebrew/bin/gpg --armor --export-secret-keys 0C2347B9879543B9 | base64 | pbcopy
 ```
 
-The copied content begins with `-----BEGIN PGP PRIVATE KEY BLOCK-----` and ends with `-----END PGP PRIVATE KEY BLOCK-----`.
+**Option B (Standard ASCII Armor):**
+```bash
+/opt/homebrew/bin/gpg --armor --export-secret-keys 0C2347B9879543B9 | pbcopy
+```
+
+The copied content is placed directly in your macOS clipboard ready to be pasted into the `GPG_SIGNING_KEY` secret.
 
 ---
 
@@ -201,8 +206,8 @@ dependencies {
 ### 4. `checksum mismatch at in checksum of 20 bytes`
 - **Cause**: The passphrase entered in the `GPG_SIGNING_PASSPHRASE` secret is incorrect, has trailing spaces/newlines, or does not match the exported private key in `GPG_SIGNING_KEY`. BouncyCastle verifies the 20-byte SHA-1 hash of the decrypted key, and fails if the passphrase is not exact.
 - **Verification Command (Run locally on macOS)**:
-  Test your key and passphrase directly in your terminal:
+  Test your key and passphrase directly in your terminal (using `--pinentry-mode loopback` to avoid `Inappropriate ioctl for device`):
   ```bash
-  echo "test" | gpg --batch --yes --passphrase "YOUR_PASSPHRASE" --armor --detach-sign -u <KEY_ID>
+  echo "test" | /opt/homebrew/bin/gpg --batch --yes --pinentry-mode loopback --passphrase "YOUR_PASSPHRASE" --armor --detach-sign -u 0C2347B9879543B9
   ```
-  If it succeeds, update your GitHub Secret `GPG_SIGNING_PASSPHRASE` with that exact string (without extra spaces).
+  If it succeeds (outputs a PGP signature block), update your GitHub Secret `GPG_SIGNING_PASSPHRASE` with that exact string (without extra spaces).

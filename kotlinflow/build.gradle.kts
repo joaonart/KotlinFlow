@@ -1,4 +1,5 @@
 import com.vanniktech.maven.publish.SonatypeHost
+import java.util.Base64
 
 plugins {
     alias(libs.plugins.android.library)
@@ -72,6 +73,50 @@ dependencies {
 val releaseVersion = project.findProperty("VERSION_NAME") as String?
     ?: System.getenv("VERSION_NAME")?.removePrefix("v")
     ?: "1.0.0"
+
+// Resolve and normalize GPG signing credentials for reliable CI/CD signing
+val rawSigningKey = (project.findProperty("signingInMemoryKey") as String?)
+    ?: System.getenv("ORG_GRADLE_PROJECT_signingInMemoryKey")
+    ?: System.getenv("GPG_SIGNING_KEY")
+
+val normalizedSigningKey: String? = rawSigningKey?.let { keyStr ->
+    val trimmed = keyStr.trim()
+    if (trimmed.startsWith("-----BEGIN")) {
+        trimmed.replace("\r\n", "\n").replace("\\n", "\n")
+    } else {
+        try {
+            val decoded = String(Base64.getMimeDecoder().decode(trimmed), Charsets.UTF_8)
+            decoded.replace("\r\n", "\n").replace("\\n", "\n")
+        } catch (_: Exception) {
+            trimmed.replace("\r\n", "\n").replace("\\n", "\n")
+        }
+    }
+}
+
+if (!normalizedSigningKey.isNullOrBlank()) {
+    project.extra.set("signingInMemoryKey", normalizedSigningKey)
+}
+
+val rawKeyId = (project.findProperty("signingInMemoryKeyId") as String?)
+    ?: System.getenv("ORG_GRADLE_PROJECT_signingInMemoryKeyId")
+    ?: System.getenv("GPG_KEY_ID")
+
+val normalizedKeyId: String? = rawKeyId?.let { idStr ->
+    val clean = idStr.trim().removePrefix("0x").removePrefix("0X")
+    if (clean.length > 8) clean.takeLast(8) else clean
+}
+
+if (!normalizedKeyId.isNullOrBlank()) {
+    project.extra.set("signingInMemoryKeyId", normalizedKeyId)
+}
+
+val rawSigningPassword = (project.findProperty("signingInMemoryKeyPassword") as String?)
+    ?: System.getenv("ORG_GRADLE_PROJECT_signingInMemoryKeyPassword")
+    ?: System.getenv("GPG_SIGNING_PASSPHRASE")
+
+if (rawSigningPassword != null) {
+    project.extra.set("signingInMemoryKeyPassword", rawSigningPassword)
+}
 
 mavenPublishing {
     publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)

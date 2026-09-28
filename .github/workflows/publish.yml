@@ -63,15 +63,63 @@ jobs:
       - name: Build Demo App APK
         run: ./gradlew :app:assembleDebug
 
+      - name: Setup & Verify GPG Key
+        if: ${{ secrets.SONATYPE_TOKEN_USERNAME != '' && secrets.GPG_SIGNING_KEY != '' }}
+        env:
+          GPG_RAW_KEY: ${{ secrets.GPG_SIGNING_KEY }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_SIGNING_PASSPHRASE }}
+        run: |
+          mkdir -p ~/.gradle
+          KEY_FILE="$RUNNER_TEMP/secret-key.asc"
+          echo "$GPG_RAW_KEY" > "$RUNNER_TEMP/raw.key"
+
+          # Decode Base64 if needed
+          if ! grep -q "BEGIN PGP" "$RUNNER_TEMP/raw.key"; then
+            echo "Decoding Base64-encoded GPG key..."
+            base64 -d "$RUNNER_TEMP/raw.key" > "$KEY_FILE"
+          else
+            cp "$RUNNER_TEMP/raw.key" "$KEY_FILE"
+          fi
+
+          # Ensure Unix line endings
+          sed -i 's/\r$//' "$KEY_FILE"
+
+          # Verify GPG key import into runner keyring
+          echo "Importing GPG key into runner keyring..."
+          IMPORT_OUTPUT=$(gpg --batch --import "$KEY_FILE" 2>&1)
+          echo "$IMPORT_OUTPUT"
+
+          # Extract Short Key ID (8 hex chars)
+          KEY_ID=$(gpg --list-secret-keys --keyid-format 0xshort | grep "sec " | head -n 1 | awk '{print $2}' | cut -d'/' -f2)
+          SHORT_KEY_ID="${KEY_ID: -8}"
+          echo "Extracted Short Key ID: $SHORT_KEY_ID"
+
+          # Verify passphrase via loopback pinentry
+          if [ -n "$GPG_PASSPHRASE" ] && [ -n "$SHORT_KEY_ID" ]; then
+            echo "Verifying passphrase..."
+            if echo "test" | gpg --batch --yes --pinentry-mode loopback --passphrase "$GPG_PASSPHRASE" --armor --detach-sign -u "$SHORT_KEY_ID" > /dev/null 2>&1; then
+              echo "✅ Key and passphrase verified successfully!"
+            else
+              echo "::warning::Passphrase check failed via loopback. Ensure GPG_SIGNING_PASSPHRASE is correct."
+            fi
+          fi
+
+          # Export into GITHUB_ENV for Gradle with exact multiline formatting
+          echo "ORG_GRADLE_PROJECT_signingInMemoryKey<<EOF" >> $GITHUB_ENV
+          cat "$KEY_FILE" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+          if [ -n "$SHORT_KEY_ID" ]; then
+            echo "ORG_GRADLE_PROJECT_signingInMemoryKeyId=$SHORT_KEY_ID" >> $GITHUB_ENV
+          fi
+          echo "ORG_GRADLE_PROJECT_signingInMemoryKeyPassword=$GPG_PASSPHRASE" >> $GITHUB_ENV
+
+          rm -f "$RUNNER_TEMP/raw.key" "$KEY_FILE"
+
       - name: Publish to Maven Central (Sonatype Central Portal)
-        if: ${{ env.SONATYPE_TOKEN_USERNAME != '' && env.GPG_SIGNING_KEY != '' }}
+        if: ${{ secrets.SONATYPE_TOKEN_USERNAME != '' && secrets.GPG_SIGNING_KEY != '' }}
         env:
           ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.SONATYPE_TOKEN_USERNAME }}
           ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.SONATYPE_TOKEN_PASSWORD }}
-          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.GPG_SIGNING_KEY }}
-          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.GPG_SIGNING_PASSPHRASE }}
-          SONATYPE_TOKEN_USERNAME: ${{ secrets.SONATYPE_TOKEN_USERNAME }}
-          GPG_SIGNING_KEY: ${{ secrets.GPG_SIGNING_KEY }}
         run: |
           ./gradlew :kotlinflow:publishAndReleaseToMavenCentral \
             -PVERSION_NAME=${{ steps.version_step.outputs.VERSION }} \
