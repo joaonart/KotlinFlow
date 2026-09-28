@@ -94,13 +94,20 @@ jobs:
           SHORT_KEY_ID="${KEY_ID: -8}"
           echo "Extracted Short Key ID: $SHORT_KEY_ID"
 
+          # Configure gpg-agent for loopback pinentry on Linux runner
+          mkdir -p ~/.gnupg
+          chmod 700 ~/.gnupg
+          echo "allow-loopback-pinentry" > ~/.gnupg/gpg-agent.conf
+          gpgconf --reload gpg-agent 2>/dev/null || true
+
           # Verify passphrase via loopback pinentry
           if [ -n "$GPG_PASSPHRASE" ] && [ -n "$SHORT_KEY_ID" ]; then
             echo "Verifying passphrase..."
-            if echo "test" | gpg --batch --yes --pinentry-mode loopback --passphrase "$GPG_PASSPHRASE" --armor --detach-sign -u "$SHORT_KEY_ID" > /dev/null 2>&1; then
+            TEST_SIGN_OUTPUT=$(echo "test" | gpg --batch --yes --pinentry-mode loopback --passphrase "$GPG_PASSPHRASE" --armor --detach-sign -u "$SHORT_KEY_ID" 2>&1)
+            if [ $? -eq 0 ]; then
               echo "✅ Key and passphrase verified successfully!"
             else
-              echo "::warning::Passphrase check failed via loopback. Ensure GPG_SIGNING_PASSPHRASE is correct."
+              echo "::warning::Passphrase check details: $TEST_SIGN_OUTPUT"
             fi
           fi
 
