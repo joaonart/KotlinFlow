@@ -65,7 +65,6 @@ jobs:
         run: ./gradlew :app:assembleDebug
 
       - name: Setup & Verify GPG Key
-        if: ${{ secrets.SONATYPE_TOKEN_USERNAME != '' && secrets.GPG_SIGNING_KEY != '' }}
         env:
           GPG_RAW_KEY: ${{ secrets.GPG_SIGNING_KEY }}
           GPG_PASSPHRASE: ${{ secrets.GPG_SIGNING_PASSPHRASE }}
@@ -117,7 +116,6 @@ jobs:
           rm -f "$RUNNER_TEMP/raw.key" "$KEY_FILE"
 
       - name: Publish to Maven Central (Sonatype Central Portal)
-        if: ${{ secrets.SONATYPE_TOKEN_USERNAME != '' && secrets.GPG_SIGNING_KEY != '' }}
         env:
           ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.SONATYPE_TOKEN_USERNAME }}
           ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.SONATYPE_TOKEN_PASSWORD }}
