@@ -75,7 +75,7 @@ jobs:
         run: |
           ./gradlew :kotlinflow:publishAndReleaseToMavenCentral \
             -PVERSION_NAME=${{ steps.version_step.outputs.VERSION }} \
-            --no-configuration-cache
+            --no-configuration-cache --stacktrace --info
 
       - name: Prepare Release Artifacts
         run: |
