@@ -114,9 +114,11 @@ val rawSigningPassword = (project.findProperty("signingInMemoryKeyPassword") as 
     ?: System.getenv("ORG_GRADLE_PROJECT_signingInMemoryKeyPassword")
     ?: System.getenv("GPG_SIGNING_PASSPHRASE")
 
-if (rawSigningPassword != null) {
-    project.extra.set("signingInMemoryKeyPassword", rawSigningPassword.trimEnd('\r', '\n'))
+val cleanPassword = when (val trimmed = rawSigningPassword?.trimEnd('\r', '\n')) {
+    null, "", "none", "empty", "\"\"", "''" -> ""
+    else -> trimmed
 }
+project.extra.set("signingInMemoryKeyPassword", cleanPassword)
 
 mavenPublishing {
     publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)

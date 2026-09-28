@@ -100,11 +100,20 @@ jobs:
           echo "allow-loopback-pinentry" > ~/.gnupg/gpg-agent.conf
           gpgconf --reload gpg-agent 2>/dev/null || true
 
+          # Handle empty, none or dummy passphrase placeholders
+          if [ "$GPG_PASSPHRASE" = "none" ] || [ "$GPG_PASSPHRASE" = "empty" ] || [ "$GPG_PASSPHRASE" = '""' ] || [ "$GPG_PASSPHRASE" = "''" ]; then
+            GPG_PASSPHRASE=""
+          fi
+
           # Verify passphrase via loopback pinentry
-          if [ -n "$GPG_PASSPHRASE" ] && [ -n "$SHORT_KEY_ID" ]; then
+          if [ -n "$SHORT_KEY_ID" ]; then
             echo "Verifying passphrase..."
             set +e
-            TEST_SIGN_OUTPUT=$(echo "test" | gpg --batch --yes --pinentry-mode loopback --passphrase "$GPG_PASSPHRASE" --armor --detach-sign -u "$SHORT_KEY_ID" 2>&1)
+            if [ -n "$GPG_PASSPHRASE" ]; then
+              TEST_SIGN_OUTPUT=$(echo "test" | gpg --batch --yes --pinentry-mode loopback --passphrase "$GPG_PASSPHRASE" --armor --detach-sign -u "$SHORT_KEY_ID" 2>&1)
+            else
+              TEST_SIGN_OUTPUT=$(echo "test" | gpg --batch --yes --pinentry-mode loopback --passphrase "" --armor --detach-sign -u "$SHORT_KEY_ID" 2>&1)
+            fi
             SIGN_STATUS=$?
             set -e
             if [ $SIGN_STATUS -eq 0 ]; then
