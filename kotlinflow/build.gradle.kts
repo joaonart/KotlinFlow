@@ -1,9 +1,11 @@
+import com.vanniktech.maven.publish.SonatypeHost
+
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
-    `maven-publish`
+    alias(libs.plugins.vanniktech.maven.publish)
 }
 
 android {
@@ -46,12 +48,6 @@ android {
     testOptions {
         unitTests.isReturnDefaultValues = true
     }
-
-    publishing {
-        singleVariant("release") {
-            withSourcesJar()
-        }
-    }
 }
 
 dependencies {
@@ -73,54 +69,48 @@ dependencies {
     testImplementation(libs.androidx.compose.ui)
 }
 
-afterEvaluate {
-    val releaseVersion = project.findProperty("VERSION_NAME") as String?
-        ?: System.getenv("VERSION_NAME")?.removePrefix("v")
-        ?: "1.0.0"
+val releaseVersion = project.findProperty("VERSION_NAME") as String?
+    ?: System.getenv("VERSION_NAME")?.removePrefix("v")
+    ?: "1.0.0"
 
-    publishing {
-        publications {
-            create<MavenPublication>("release") {
-                from(components["release"])
-                groupId = "com.github.joaonart"
-                artifactId = "kotlinflow"
-                version = releaseVersion
+mavenPublishing {
+    publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
+    if (project.hasProperty("signingInMemoryKey") ||
+        System.getenv("ORG_GRADLE_PROJECT_signingInMemoryKey") != null ||
+        project.hasProperty("signing.keyId")
+    ) {
+        signAllPublications()
+    }
+    coordinates(
+        groupId = "io.github.joaonart",
+        artifactId = "kotlinflow",
+        version = releaseVersion
+    )
 
-                pom {
-                    name.set("KotlinFlow")
-                    description.set("A faithful, highly optimized Android port of SwiftFlow built natively with Jetpack Compose.")
-                    url.set("https://github.com/joaonart/KotlinFlow")
-                    licenses {
-                        license {
-                            name.set("MIT License")
-                            url.set("https://opensource.org/licenses/MIT")
-                        }
-                    }
-                    developers {
-                        developer {
-                            id.set("joaonart")
-                            name.set("João Alves")
-                            email.set("joao.alves64@gmail.com")
-                        }
-                    }
-                    scm {
-                        connection.set("scm:git:git://github.com/joaonart/KotlinFlow.git")
-                        developerConnection.set("scm:git:ssh://github.com:joaonart/KotlinFlow.git")
-                        url.set("https://github.com/joaonart/KotlinFlow")
-                    }
-                }
+    pom {
+        name.set("KotlinFlow")
+        description.set("A faithful, highly optimized Android port of SwiftFlow built natively with Jetpack Compose.")
+        inceptionYear.set("2026")
+        url.set("https://github.com/joaonart/KotlinFlow")
+        licenses {
+            license {
+                name.set("MIT License")
+                url.set("https://opensource.org/licenses/MIT")
+                distribution.set("repo")
             }
         }
-
-        repositories {
-            maven {
-                name = "GitHubPackages"
-                url = uri("https://maven.pkg.github.com/joaonart/KotlinFlow")
-                credentials {
-                    username = System.getenv("GITHUB_ACTOR") ?: project.findProperty("gpr.user") as String? ?: ""
-                    password = System.getenv("GITHUB_TOKEN") ?: project.findProperty("gpr.key") as String? ?: ""
-                }
+        developers {
+            developer {
+                id.set("joaonart")
+                name.set("João Alves")
+                email.set("joao.alves64@gmail.com")
+                url.set("https://github.com/joaonart")
             }
+        }
+        scm {
+            connection.set("scm:git:git://github.com/joaonart/KotlinFlow.git")
+            developerConnection.set("scm:git:ssh://github.com:joaonart/KotlinFlow.git")
+            url.set("https://github.com/joaonart/KotlinFlow")
         }
     }
 }
