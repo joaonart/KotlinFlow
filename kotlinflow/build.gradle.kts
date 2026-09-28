@@ -74,13 +74,17 @@ dependencies {
 }
 
 afterEvaluate {
+    val releaseVersion = project.findProperty("VERSION_NAME") as String?
+        ?: System.getenv("VERSION_NAME")?.removePrefix("v")
+        ?: "1.0.0"
+
     publishing {
         publications {
             create<MavenPublication>("release") {
                 from(components["release"])
                 groupId = "com.github.joaonart"
                 artifactId = "kotlinflow"
-                version = "1.0.0"
+                version = releaseVersion
 
                 pom {
                     name.set("KotlinFlow")
@@ -104,6 +108,17 @@ afterEvaluate {
                         developerConnection.set("scm:git:ssh://github.com:joaonart/KotlinFlow.git")
                         url.set("https://github.com/joaonart/KotlinFlow")
                     }
+                }
+            }
+        }
+
+        repositories {
+            maven {
+                name = "GitHubPackages"
+                url = uri("https://maven.pkg.github.com/joaonart/KotlinFlow")
+                credentials {
+                    username = System.getenv("GITHUB_ACTOR") ?: project.findProperty("gpr.user") as String? ?: ""
+                    password = System.getenv("GITHUB_TOKEN") ?: project.findProperty("gpr.key") as String? ?: ""
                 }
             }
         }

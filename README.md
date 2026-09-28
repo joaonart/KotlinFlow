@@ -54,28 +54,7 @@ KotlinFlow brings full-featured node-based graph editing to Android apps. Design
 
 ## Installation
 
-### Option 1: Git Submodule / Project Dependency
-
-Clone the repository into your project or add as a submodule:
-
-```bash
-git submodule add https://github.com/joaonart/KotlinFlow.git
-```
-
-Include `:kotlinflow` in your `settings.gradle.kts` and `app/build.gradle.kts`:
-
-```kotlin
-// settings.gradle.kts
-include(":kotlinflow")
-project(":kotlinflow").projectDir = file("KotlinFlow/kotlinflow")
-
-// app/build.gradle.kts
-dependencies {
-    implementation(project(":kotlinflow"))
-}
-```
-
-### Option 2: JitPack
+### Option 1: JitPack (Recommended for Open-Source & CI)
 
 Add the JitPack repository to your root `settings.gradle.kts`:
 
@@ -93,7 +72,68 @@ Add the dependency to your module's `build.gradle.kts`:
 
 ```kotlin
 dependencies {
-    implementation("com.github.joaonart:KotlinFlow:1.0.0")
+    implementation("com.github.joaonart.KotlinFlow:kotlinflow:v1.0.0")
+}
+```
+
+### Option 2: GitHub Packages
+
+Add the GitHub Packages repository to your root `settings.gradle.kts`:
+
+```kotlin
+dependencyResolutionManagement {
+    repositories {
+        google()
+        mavenCentral()
+        maven {
+            url = uri("https://maven.pkg.github.com/joaonart/KotlinFlow")
+            credentials {
+                username = System.getenv("GITHUB_ACTOR") ?: providers.gradleProperty("gpr.user").orNull ?: ""
+                password = System.getenv("GITHUB_TOKEN") ?: providers.gradleProperty("gpr.key").orNull ?: ""
+            }
+        }
+    }
+}
+```
+
+Add the dependency to your module's `build.gradle.kts`:
+
+```kotlin
+dependencies {
+    implementation("com.github.joaonart:kotlinflow:1.0.0")
+}
+```
+
+### Option 3: Composite Build (Recommended for Local App Development)
+
+If you are developing your app alongside KotlinFlow, use a Gradle composite build in your `settings.gradle.kts` for instant hot-reloading and source navigation:
+
+```kotlin
+// settings.gradle.kts
+includeBuild("path/to/KotlinFlow")
+```
+
+```kotlin
+// app/build.gradle.kts
+dependencies {
+    implementation("com.github.joaonart:kotlinflow")
+}
+```
+
+### Option 4: Git Submodule / Project Dependency
+
+```bash
+git submodule add https://github.com/joaonart/KotlinFlow.git
+```
+
+```kotlin
+// settings.gradle.kts
+include(":kotlinflow")
+project(":kotlinflow").projectDir = file("KotlinFlow/kotlinflow")
+
+// app/build.gradle.kts
+dependencies {
+    implementation(project(":kotlinflow"))
 }
 ```
 
