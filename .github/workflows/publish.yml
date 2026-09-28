@@ -1,4 +1,5 @@
 name: Publish Package & Release
+run-name: Publish & Release ${{ inputs.version || github.ref_name }} by @${{ github.actor }}
 
 on:
   push:
