@@ -54,7 +54,18 @@ KotlinFlow brings full-featured node-based graph editing to Android apps. Design
 
 ## Installation
 
-### Option 1: JitPack (Recommended for Open-Source & CI)
+### Option 1: Maven Central (Recommended)
+
+Once published to Maven Central via Sonatype Central Portal (see [Maven Central Publishing Guide](MAVEN_CENTRAL_PUBLISHING_GUIDE.md)), simply add the dependency:
+
+```kotlin
+// app/build.gradle.kts
+dependencies {
+    implementation("io.github.joaonart:kotlinflow:1.0.0")
+}
+```
+
+### Option 2: JitPack (Instant Open-Source & CI Builds)
 
 Add the JitPack repository to your root `settings.gradle.kts`:
 
@@ -76,7 +87,7 @@ dependencies {
 }
 ```
 
-### Option 2: GitHub Packages
+### Option 3: GitHub Packages
 
 Add the GitHub Packages repository to your root `settings.gradle.kts`:
 
@@ -104,7 +115,7 @@ dependencies {
 }
 ```
 
-### Option 3: Composite Build (Recommended for Local App Development)
+### Option 4: Composite Build (Recommended for Local App Development)
 
 If you are developing your app alongside KotlinFlow, use a Gradle composite build in your `settings.gradle.kts` for instant hot-reloading and source navigation:
 
@@ -120,7 +131,7 @@ dependencies {
 }
 ```
 
-### Option 4: Git Submodule / Project Dependency
+### Option 5: Git Submodule / Project Dependency
 
 ```bash
 git submodule add https://github.com/joaonart/KotlinFlow.git
