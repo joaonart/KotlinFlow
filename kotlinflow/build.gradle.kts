@@ -115,7 +115,7 @@ val rawSigningPassword = (project.findProperty("signingInMemoryKeyPassword") as 
     ?: System.getenv("GPG_SIGNING_PASSPHRASE")
 
 if (rawSigningPassword != null) {
-    project.extra.set("signingInMemoryKeyPassword", rawSigningPassword)
+    project.extra.set("signingInMemoryKeyPassword", rawSigningPassword.trimEnd('\r', '\n'))
 }
 
 mavenPublishing {
