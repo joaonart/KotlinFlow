@@ -79,7 +79,7 @@ fun MiniMap(
                 .size(width, height)
                 .shadow(4.dp, RoundedCornerShape(8.dp))
                 .clip(RoundedCornerShape(8.dp))
-                .background(Color.White.copy(alpha = flowState.viewport.zoom.let { 0.92f }))
+                .background(Color.White.copy(alpha = 0.92f))
                 .border(1.dp, Color.Gray.copy(alpha = 0.2f), RoundedCornerShape(8.dp))
         ) {
             Canvas(

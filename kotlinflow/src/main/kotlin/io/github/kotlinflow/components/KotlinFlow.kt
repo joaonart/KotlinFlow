@@ -23,10 +23,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -304,32 +306,20 @@ fun <NodeData, EdgeData> KotlinFlow(
     var draftingSourceHandle by remember { mutableStateOf<NodeHandle?>(null) }
     var draftingSourceNodeId by remember { mutableStateOf<String?>(null) }
 
-    // Animated dash phase for animated edges
-    val infiniteTransition = rememberInfiniteTransition(label = "edgeDash")
-    val dashPhase by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 60f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1500, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "dashPhase"
-    )
-
-    // Sync flowState
-    LaunchedEffect(viewport, viewSize) {
-        flowState.viewport = viewport
+    // Sync flowState viewSize
+    LaunchedEffect(viewSize) {
         flowState.viewSize = viewSize
-        kotlinFlowInstance?.viewport = viewport
         kotlinFlowInstance?.viewSize = viewSize
-        onViewportChange?.invoke(viewport)
     }
 
-    LaunchedEffect(nodes, edges) {
+    LaunchedEffect(nodes) {
         flowState.nodes = nodes.map { AnyNodeSnapshot.from(it) }
+    }
+
+    LaunchedEffect(edges) {
         flowState.edges = edges.map { AnyEdgeSnapshot.from(it) }
 
-        // Build connections map
+        // Build connections map only when edges change
         val map = mutableMapOf<String, MutableList<Connection>>()
         for (edge in edges) {
             val conn = Connection(edge.source, edge.target, edge.sourceHandle, edge.targetHandle)
@@ -352,11 +342,19 @@ fun <NodeData, EdgeData> KotlinFlow(
 
     // Connect viewport mutations
     flowState.internalApplyViewport = { newVp, _ ->
-        viewport = newVp.copy(zoom = newVp.clampedZoom)
+        val clamped = newVp.copy(zoom = newVp.clampedZoom)
+        viewport = clamped
+        flowState.viewport = clamped
+        kotlinFlowInstance?.viewport = clamped
+        onViewportChange?.invoke(clamped)
     }
 
     kotlinFlowInstance?.internalApplyViewport = { newVp, _ ->
-        viewport = newVp.copy(zoom = newVp.clampedZoom)
+        val clamped = newVp.copy(zoom = newVp.clampedZoom)
+        viewport = clamped
+        flowState.viewport = clamped
+        kotlinFlowInstance?.viewport = clamped
+        onViewportChange?.invoke(clamped)
     }
 
     kotlinFlowInstance?.internalDeleteElements = { nodeIds, edgeIds ->
@@ -387,7 +385,11 @@ fun <NodeData, EdgeData> KotlinFlow(
                             val newZoom = if (zoomOnPinch) (viewport.zoom * zoom).coerceIn(Viewport.MinZoom, Viewport.MaxZoom) else viewport.zoom
                             val newX = if (panOnDrag) viewport.x + pan.x else viewport.x
                             val newY = if (panOnDrag) viewport.y + pan.y else viewport.y
-                            viewport = Viewport(newX, newY, newZoom)
+                            val newVp = Viewport(newX, newY, newZoom)
+                            viewport = newVp
+                            flowState.viewport = newVp
+                            kotlinFlowInstance?.viewport = newVp
+                            onViewportChange?.invoke(newVp)
                         }
                     }
                 }
@@ -436,7 +438,6 @@ fun <NodeData, EdgeData> KotlinFlow(
                     nodes = nodes,
                     nodeSizes = nodeSizes,
                     theme = theme,
-                    dashPhase = dashPhase,
                     onEdgeClick = onEdgeClick,
                     onEdgeDoubleClick = onEdgeDoubleClick,
                     onEdgesChange = onEdgesChange,
@@ -460,74 +461,33 @@ fun <NodeData, EdgeData> KotlinFlow(
                     val nodeSize = nodeSizes[node.id] ?: Size(node.width ?: 150f, node.height ?: 50f)
                     val isNodeDraggable = nodesDraggable && node.draggable && flowState.isInteractive
 
-                    Box(
-                        modifier = Modifier
-                            .offset {
-                                IntOffset(
-                                    x = (node.position.x - nodeOrigin.x * nodeSize.width).roundToInt(),
-                                    y = (node.position.y - nodeOrigin.y * nodeSize.height).roundToInt()
-                                )
-                            }
-                            .zIndex((if (node.selected && zIndexMode != ZIndexMode.MANUAL) node.zIndex + 1000 else node.zIndex).toFloat())
-                            .onGloballyPositioned { coordinates ->
-                                val sz = Size(coordinates.size.width.toFloat(), coordinates.size.height.toFloat())
-                                nodeSizes[node.id] = sz
-                                flowState.nodeSizes = nodeSizes.toMap()
-                            }
-                            .pointerInput(node.id, isNodeDraggable) {
-                                if (!isNodeDraggable) return@pointerInput
-                                detectDragGestures(
-                                    onDragStart = {
-                                        onNodeDragStart?.invoke(node)
-                                    },
-                                    onDrag = { change, dragAmount ->
-                                        change.consume()
-                                        // Adjust by zoom
-                                        val deltaX = dragAmount.x / viewport.zoom
-                                        val deltaY = dragAmount.y / viewport.zoom
-
-                                        var newPos = XYPosition(node.position.x + deltaX, node.position.y + deltaY)
-                                        if (snapToGrid) {
-                                            newPos = newPos.snapped(snapGrid.first, snapGrid.second)
-                                        }
-                                        newPos = coordinateExtent.clamp(newPos)
-
-                                        onNodesChange?.invoke(listOf(NodeChange.Position(node.id, newPos)))
-                                        onNodeDrag?.invoke(node.copy(position = newPos))
-                                    },
-                                    onDragEnd = {
-                                        onNodeDragStop?.invoke(node)
-                                    },
-                                    onDragCancel = {
-                                        onNodeDragStop?.invoke(node)
-                                    }
-                                )
-                            }
-                            .pointerInput(node.id) {
-                                detectTapGestures(
-                                    onTap = {
-                                        onNodeClick?.invoke(node)
-                                        if (elementsSelectable && node.selectable) {
-                                            val changes = listOf(NodeChange.Selection(node.id, !node.selected))
-                                            onNodesChange?.invoke(changes)
-                                        }
-                                    },
-                                    onDoubleTap = {
-                                        onNodeDoubleClick?.invoke(node)
-                                    }
-                                )
-                            }
-                            .then(
-                                if (node.selected) {
-                                    Modifier.border(
-                                        width = node.style?.borderWidth?.dp ?: theme.nodeSelectedBorderWidth.dp,
-                                        color = node.style?.borderColor ?: theme.nodeSelectedBorderColor,
-                                        shape = RoundedCornerShape(node.style?.borderRadius?.dp ?: 8.dp)
-                                    )
-                                } else Modifier
-                            )
-                    ) {
-                        nodeContent(node)
+                    key(node.id) {
+                        FlowNodeItem(
+                            node = node,
+                            nodeOrigin = nodeOrigin,
+                            nodeSize = nodeSize,
+                            zIndexMode = zIndexMode,
+                            isNodeDraggable = isNodeDraggable,
+                            elementsSelectable = elementsSelectable,
+                            zoom = viewport.zoom,
+                            snapToGrid = snapToGrid,
+                            snapGrid = snapGrid,
+                            coordinateExtent = coordinateExtent,
+                            theme = theme,
+                            onNodeDragStart = onNodeDragStart,
+                            onNodeDrag = onNodeDrag,
+                            onNodeDragStop = onNodeDragStop,
+                            onNodeClick = onNodeClick,
+                            onNodeDoubleClick = onNodeDoubleClick,
+                            onNodesChange = onNodesChange,
+                            onSizeMeasured = { sz ->
+                                if (nodeSizes[node.id] != sz) {
+                                    nodeSizes[node.id] = sz
+                                    flowState.nodeSizes = nodeSizes.toMap()
+                                }
+                            },
+                            content = nodeContent
+                        )
                     }
                 }
             }
@@ -560,6 +520,118 @@ fun <NodeData, EdgeData> KotlinFlow(
     }
 }
 
+// MARK: - Internal FlowNodeItem Component
+
+@Composable
+private fun <NodeData> FlowNodeItem(
+    node: Node<NodeData>,
+    nodeOrigin: NodeOrigin,
+    nodeSize: Size,
+    zIndexMode: ZIndexMode,
+    isNodeDraggable: Boolean,
+    elementsSelectable: Boolean,
+    zoom: Float,
+    snapToGrid: Boolean,
+    snapGrid: Pair<Float, Float>,
+    coordinateExtent: CoordinateExtent,
+    theme: KotlinFlowTheme,
+    onNodeDragStart: ((Node<NodeData>) -> Unit)?,
+    onNodeDrag: ((Node<NodeData>) -> Unit)?,
+    onNodeDragStop: ((Node<NodeData>) -> Unit)?,
+    onNodeClick: ((Node<NodeData>) -> Unit)?,
+    onNodeDoubleClick: ((Node<NodeData>) -> Unit)?,
+    onNodesChange: ((List<NodeChange<NodeData>>) -> Unit)?,
+    onSizeMeasured: (Size) -> Unit,
+    content: @Composable (Node<NodeData>) -> Unit
+) {
+    val currentNode by rememberUpdatedState(node)
+    val currentZoom by rememberUpdatedState(zoom)
+    val currentSnapToGrid by rememberUpdatedState(snapToGrid)
+    val currentSnapGrid by rememberUpdatedState(snapGrid)
+    val currentExtent by rememberUpdatedState(coordinateExtent)
+    val currentOnNodesChange by rememberUpdatedState(onNodesChange)
+    val currentOnNodeDrag by rememberUpdatedState(onNodeDrag)
+    val currentOnNodeDragStart by rememberUpdatedState(onNodeDragStart)
+    val currentOnNodeDragStop by rememberUpdatedState(onNodeDragStop)
+    val currentOnNodeClick by rememberUpdatedState(onNodeClick)
+    val currentOnNodeDoubleClick by rememberUpdatedState(onNodeDoubleClick)
+
+    var dragPosition by remember { mutableStateOf(node.position) }
+
+    Box(
+        modifier = Modifier
+            .offset {
+                IntOffset(
+                    x = (node.position.x - nodeOrigin.x * nodeSize.width).roundToInt(),
+                    y = (node.position.y - nodeOrigin.y * nodeSize.height).roundToInt()
+                )
+            }
+            .zIndex((if (node.selected && zIndexMode != ZIndexMode.MANUAL) node.zIndex + 1000 else node.zIndex).toFloat())
+            .onGloballyPositioned { coordinates ->
+                val sz = Size(coordinates.size.width.toFloat(), coordinates.size.height.toFloat())
+                onSizeMeasured(sz)
+            }
+            .pointerInput(node.id, isNodeDraggable) {
+                if (!isNodeDraggable) return@pointerInput
+                detectDragGestures(
+                    onDragStart = {
+                        dragPosition = currentNode.position
+                        currentOnNodeDragStart?.invoke(currentNode)
+                    },
+                    onDrag = { change, dragAmount ->
+                        change.consume()
+                        val z = currentZoom.coerceAtLeast(0.01f)
+                        val deltaX = dragAmount.x / z
+                        val deltaY = dragAmount.y / z
+
+                        val updatedX = dragPosition.x + deltaX
+                        val updatedY = dragPosition.y + deltaY
+                        var newPos = XYPosition(updatedX, updatedY)
+                        if (currentSnapToGrid) {
+                            newPos = newPos.snapped(currentSnapGrid.first, currentSnapGrid.second)
+                        }
+                        newPos = currentExtent.clamp(newPos)
+                        dragPosition = newPos
+
+                        currentOnNodesChange?.invoke(listOf(NodeChange.Position(currentNode.id, newPos)))
+                        currentOnNodeDrag?.invoke(currentNode.copy(position = newPos))
+                    },
+                    onDragEnd = {
+                        currentOnNodeDragStop?.invoke(currentNode)
+                    },
+                    onDragCancel = {
+                        currentOnNodeDragStop?.invoke(currentNode)
+                    }
+                )
+            }
+            .pointerInput(node.id) {
+                detectTapGestures(
+                    onTap = {
+                        currentOnNodeClick?.invoke(currentNode)
+                        if (elementsSelectable && currentNode.selectable) {
+                            val changes = listOf(NodeChange.Selection(currentNode.id, !currentNode.selected))
+                            currentOnNodesChange?.invoke(changes)
+                        }
+                    },
+                    onDoubleTap = {
+                        currentOnNodeDoubleClick?.invoke(currentNode)
+                    }
+                )
+            }
+            .then(
+                if (node.selected) {
+                    Modifier.border(
+                        width = node.style?.borderWidth?.dp ?: theme.nodeSelectedBorderWidth.dp,
+                        color = node.style?.borderColor ?: theme.nodeSelectedBorderColor,
+                        shape = RoundedCornerShape(node.style?.borderRadius?.dp ?: 8.dp)
+                    )
+                } else Modifier
+            )
+    ) {
+        content(node)
+    }
+}
+
 // MARK: - Internal Edges Layer
 
 @Composable
@@ -568,13 +640,29 @@ private fun <NodeData, EdgeData> EdgesLayer(
     nodes: List<Node<NodeData>>,
     nodeSizes: Map<String, Size>,
     theme: KotlinFlowTheme,
-    dashPhase: Float,
     onEdgeClick: ((Edge<EdgeData>) -> Unit)?,
     onEdgeDoubleClick: ((Edge<EdgeData>) -> Unit)?,
     onEdgesChange: ((List<EdgeChange<EdgeData>>) -> Unit)?,
     edgeContent: ((Edge<EdgeData>, EdgePathResult) -> Unit)?
 ) {
     val nodeMap = remember(nodes) { nodes.associateBy { it.id } }
+    val hasAnimatedEdges = remember(edges) { edges.any { it.animated } }
+
+    val dashPhase = if (hasAnimatedEdges) {
+        val infiniteTransition = rememberInfiniteTransition(label = "edgeDash")
+        val phase by infiniteTransition.animateFloat(
+            initialValue = 0f,
+            targetValue = 60f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(1500, easing = LinearEasing),
+                repeatMode = RepeatMode.Restart
+            ),
+            label = "dashPhase"
+        )
+        phase
+    } else 0f
+
+    val markerPath = remember { Path() }
 
     Canvas(modifier = Modifier.fillMaxSize()) {
         for (edge in edges) {
@@ -617,23 +705,22 @@ private fun <NodeData, EdgeData> EdgesLayer(
             if (edge.markerEnd != null) {
                 val angle = getEdgeAngleAtEnd(edge.type, sourceX, sourceY, targetX, targetY)
                 val mSize = edge.markerEnd.width
-                val mPath = Path().apply {
-                    moveTo(targetX, targetY)
-                    lineTo(
-                        targetX - mSize * cos(angle - 0.5f),
-                        targetY - mSize * sin(angle - 0.5f)
-                    )
-                    lineTo(
-                        targetX - mSize * cos(angle + 0.5f),
-                        targetY - mSize * sin(angle + 0.5f)
-                    )
-                    close()
-                }
+                markerPath.reset()
+                markerPath.moveTo(targetX, targetY)
+                markerPath.lineTo(
+                    targetX - mSize * cos(angle - 0.5f),
+                    targetY - mSize * sin(angle - 0.5f)
+                )
+                markerPath.lineTo(
+                    targetX - mSize * cos(angle + 0.5f),
+                    targetY - mSize * sin(angle + 0.5f)
+                )
+                markerPath.close()
 
                 if (edge.markerEnd.type == MarkerType.ARROW_CLOSED) {
-                    drawPath(mPath, color = strokeColor)
+                    drawPath(markerPath, color = strokeColor)
                 } else {
-                    drawPath(mPath, color = strokeColor, style = Stroke(width = strokeW))
+                    drawPath(markerPath, color = strokeColor, style = Stroke(width = strokeW))
                 }
             }
         }

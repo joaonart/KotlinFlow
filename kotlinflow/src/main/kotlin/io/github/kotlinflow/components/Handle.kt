@@ -57,13 +57,17 @@ fun Handle(
             .onGloballyPositioned { coordinates ->
                 val bounds = coordinates.boundsInRoot()
                 val center = Offset(bounds.left + bounds.width / 2f, bounds.top + bounds.height / 2f)
-                val current = flowState.handlePositions.toMutableMap()
-                current[key] = center
-                flowState.handlePositions = current
+                if (flowState.handlePositions[key] != center) {
+                    val current = flowState.handlePositions.toMutableMap()
+                    current[key] = center
+                    flowState.handlePositions = current
+                }
 
-                val currentTypes = flowState.handleTypes.toMutableMap()
-                currentTypes[key] = type
-                flowState.handleTypes = currentTypes
+                if (flowState.handleTypes[key] != type) {
+                    val currentTypes = flowState.handleTypes.toMutableMap()
+                    currentTypes[key] = type
+                    flowState.handleTypes = currentTypes
+                }
             }
             .then(
                 if (isConnectable && flowState.isInteractive && (onDragStart != null || onDrag != null || onDragEnd != null)) {

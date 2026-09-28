@@ -241,9 +241,6 @@ fun InteractiveCanvasDemo() {
             snapToGrid = false,
             kotlinFlowInstance = flowInstance,
             overlay = {
-                // Background grid pattern
-                Background(variant = backgroundVariant)
-
                 // Controls panel (+, -, 100%, fit, lock)
                 Controls(position = PanelPosition.BOTTOM_LEFT)
 
