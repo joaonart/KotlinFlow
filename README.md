@@ -1,5 +1,13 @@
 # KotlinFlow
 
+<p align="left">
+  <a href="https://central.sonatype.com/artifact/io.github.joaonart/kotlinflow"><img src="https://img.shields.io/maven-central/v/io.github.joaonart/kotlinflow?color=007ec6&label=Maven%20Central" alt="Maven Central" /></a>
+  <a href="https://kotlinlang.org"><img src="https://img.shields.io/badge/Kotlin-2.0.21-7F52FF.svg?logo=kotlin&logoColor=white" alt="Kotlin" /></a>
+  <a href="https://developer.android.com/jetpack/compose"><img src="https://img.shields.io/badge/Android-Jetpack%20Compose-3DDC84.svg?logo=android&logoColor=white" alt="Android Jetpack Compose" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT" /></a>
+  <a href="AGENTS.md"><img src="https://img.shields.io/badge/AI%20Agent-Ready-orange.svg" alt="AI Agent Ready" /></a>
+</p>
+
 > A faithful, highly optimized Android port of [SwiftFlow](https://github.com/aaurelions/SwiftFlow) by [@aaurelions](https://github.com/aaurelions) (and inspired by ReactFlow) built natively with **Jetpack Compose**.
 
 KotlinFlow brings full-featured node-based graph editing to Android apps. Designed with 1:1 parity with SwiftFlow, it provides smooth gesture interactions, interactive node dragging, connection routing, customizable handles, multi-algorithm auto-layout, minimap navigation, and JSON serialization.
@@ -83,7 +91,7 @@ Experience KotlinFlow running natively on Android with hardware-accelerated pan 
 
 ### Option 1: Maven Central (Recommended)
 
-Once published to Maven Central via Sonatype Central Portal (see [Maven Central Publishing Guide](MAVEN_CENTRAL_PUBLISHING_GUIDE.md)), simply add the dependency:
+KotlinFlow is available on **Maven Central**. Add the dependency to your module's `build.gradle.kts`:
 
 ```kotlin
 // app/build.gradle.kts
