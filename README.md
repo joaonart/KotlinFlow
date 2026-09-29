@@ -1,4 +1,4 @@
-# KotlinFlow
+# <img src="assets/logo.svg" width="38" height="38" align="center" alt="KotlinFlow Logo" /> KotlinFlow
 
 <p align="left">
   <a href="https://central.sonatype.com/artifact/io.github.joaonart/kotlinflow"><img src="https://img.shields.io/maven-central/v/io.github.joaonart/kotlinflow?color=007ec6&label=Maven%20Central" alt="Maven Central" /></a>

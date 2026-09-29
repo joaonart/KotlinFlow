@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+  <defs>
+    <linearGradient id="kf-brand-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7F52FF"/>
+      <stop offset="100%" stop-color="#C084FC"/>
+    </linearGradient>
+  </defs>
+  <!-- Rounded Squircle Background -->
+  <rect width="48" height="48" rx="11" fill="url(#kf-brand-grad)"/>
+  <!-- Crisp KotlinFlow Layers Wireframe -->
+  <g transform="translate(8, 8) scale(1.3333)">
+    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" 
+          stroke="#ffffff" 
+          stroke-width="2.2" 
+          stroke-linecap="round" 
+          stroke-linejoin="round" 
+          fill="none"/>
+  </g>
+</svg>
