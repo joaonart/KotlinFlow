@@ -29,6 +29,7 @@ class TypesTests {
         assertEquals(ZIndexMode.AUTO, ZIndexMode.valueOf("AUTO"))
         assertEquals(PanOnScrollMode.FREE, PanOnScrollMode.valueOf("FREE"))
         assertEquals(BackgroundVariant.DOTS, BackgroundVariant.valueOf("DOTS"))
+        assertEquals(BackgroundVariant.NONE, BackgroundVariant.valueOf("NONE"))
         assertEquals(ResizeDirection.BOTTOM_RIGHT, ResizeDirection.valueOf("BOTTOM_RIGHT"))
         assertEquals(MarkerType.ARROW, MarkerType.valueOf("ARROW"))
         assertEquals(EdgeType.DEFAULT, EdgeType.valueOf("DEFAULT"))

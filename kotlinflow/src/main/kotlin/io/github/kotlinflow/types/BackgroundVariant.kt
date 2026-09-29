@@ -12,5 +12,7 @@ enum class BackgroundVariant {
     /** Horizontal and vertical line grid. */
     LINES,
     /** Cross-hair pattern at each grid intersection. */
-    CROSS
+    CROSS,
+    /** No background pattern drawn. */
+    NONE
 }

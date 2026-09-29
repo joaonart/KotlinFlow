@@ -46,8 +46,10 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import io.github.kotlinflow.models.Connection
@@ -428,7 +430,7 @@ fun <NodeData, EdgeData> KotlinFlow(
                 }
         ) {
             // Optional Background pattern
-            if (backgroundVariant != null) {
+            if (backgroundVariant != null && backgroundVariant != io.github.kotlinflow.types.BackgroundVariant.NONE) {
                 Background(
                     variant = backgroundVariant,
                     color = effectiveTheme.gridColor,
@@ -445,6 +447,7 @@ fun <NodeData, EdgeData> KotlinFlow(
                         scaleY = viewport.zoom
                         translationX = viewport.x
                         translationY = viewport.y
+                        transformOrigin = androidx.compose.ui.graphics.TransformOrigin(0f, 0f)
                     }
             ) {
                 // 1. Render Edges Layer
@@ -720,15 +723,18 @@ private fun <NodeData, EdgeData> EdgesLayer(
             if (edge.markerEnd != null) {
                 val angle = getEdgeAngleAtEnd(edge.type, sourceX, sourceY, targetX, targetY)
                 val mSize = edge.markerEnd.width
+                val handleOffset = 6.dp.toPx()
+                val tipX = targetX - handleOffset * cos(angle)
+                val tipY = targetY - handleOffset * sin(angle)
                 markerPath.reset()
-                markerPath.moveTo(targetX, targetY)
+                markerPath.moveTo(tipX, tipY)
                 markerPath.lineTo(
-                    targetX - mSize * cos(angle - 0.5f),
-                    targetY - mSize * sin(angle - 0.5f)
+                    tipX - mSize * cos(angle - 0.5f),
+                    tipY - mSize * sin(angle - 0.5f)
                 )
                 markerPath.lineTo(
-                    targetX - mSize * cos(angle + 0.5f),
-                    targetY - mSize * sin(angle + 0.5f)
+                    tipX - mSize * cos(angle + 0.5f),
+                    tipY - mSize * sin(angle + 0.5f)
                 )
                 markerPath.close()
 
@@ -760,11 +766,16 @@ private fun <NodeData, EdgeData> EdgesLayer(
         if (edgeContent != null) {
             edgeContent(edge, pathResult)
         } else if (edge.label != null) {
+            var labelSize by remember(edge.id) { mutableStateOf(IntSize.Zero) }
             EdgeText(
                 label = edge.label,
                 modifier = Modifier
+                    .onSizeChanged { labelSize = it }
                     .offset {
-                        IntOffset(pathResult.labelX.roundToInt(), pathResult.labelY.roundToInt())
+                        IntOffset(
+                            (pathResult.labelX - labelSize.width / 2f).roundToInt(),
+                            (pathResult.labelY - labelSize.height / 2f).roundToInt()
+                        )
                     }
                     .clickable {
                         onEdgeClick?.invoke(edge)
@@ -772,7 +783,8 @@ private fun <NodeData, EdgeData> EdgesLayer(
                     },
                 textStyle = theme.edgeLabelTextStyle,
                 textColor = theme.edgeLabelColor,
-                backgroundColor = theme.edgeLabelBackgroundColor
+                backgroundColor = theme.edgeLabelBackgroundColor,
+                borderColor = theme.edgeLabelBorderColor
             )
         }
     }

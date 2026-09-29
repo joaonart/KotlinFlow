@@ -2,6 +2,7 @@ package io.github.kotlinflow.models
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
 typealias SwiftFlowTheme = KotlinFlowTheme
@@ -48,9 +49,10 @@ data class KotlinFlowTheme(
     val snapLineWidth: Float = 1f,
 
     // Edge Labels
-    val edgeLabelTextStyle: TextStyle = TextStyle(fontSize = 11.sp),
-    val edgeLabelColor: Color = Color.Black,
-    val edgeLabelBackgroundColor: Color = Color(0xFF333333)
+    val edgeLabelTextStyle: TextStyle = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Medium),
+    val edgeLabelColor: Color = Color(0xFF1E293B),
+    val edgeLabelBackgroundColor: Color = Color.White,
+    val edgeLabelBorderColor: Color? = Color(0xFFCBD5E1)
 ) {
     companion object {
         val Default = KotlinFlowTheme()
@@ -68,8 +70,9 @@ data class KotlinFlowTheme(
             minimapNodeColor = Color.White.copy(alpha = 0.3f),
             minimapSelectedNodeColor = Color(0xFF00E5FF),
             snapLineColor = Color(0x8000E5FF),
-            edgeLabelColor = Color.White,
-            edgeLabelBackgroundColor = Color(0xFF333333)
+            edgeLabelColor = Color(0xFFF1F5F9),
+            edgeLabelBackgroundColor = Color(0xFF262626),
+            edgeLabelBorderColor = Color(0xFF3E3E3E)
         )
 
         val Light = KotlinFlowTheme(
@@ -85,8 +88,9 @@ data class KotlinFlowTheme(
             minimapNodeColor = Color.Gray.copy(alpha = 0.5f),
             minimapSelectedNodeColor = Color(0xFF1E88E5),
             snapLineColor = Color(0x801E88E5),
-            edgeLabelColor = Color.Black,
-            edgeLabelBackgroundColor = Color(0xFF333333)
+            edgeLabelColor = Color(0xFF1E293B),
+            edgeLabelBackgroundColor = Color.White,
+            edgeLabelBorderColor = Color(0xFFCBD5E1)
         )
     }
 }

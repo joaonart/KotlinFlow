@@ -40,6 +40,8 @@ fun Handle(
     position: Position = Position.RIGHT,
     color: Color = Color.Gray,
     size: Dp = 12.dp,
+    borderColor: Color = Color.White,
+    borderWidth: Dp = 2.dp,
     isConnectable: Boolean = true,
     onDragStart: ((Offset) -> Unit)? = null,
     onDrag: ((Offset) -> Unit)? = null,
@@ -93,6 +95,6 @@ fun Handle(
             .shadow(2.dp, CircleShape)
             .clip(CircleShape)
             .background(color)
-            .border(2.dp, Color.White, CircleShape)
+            .border(borderWidth, borderColor, CircleShape)
     )
 }

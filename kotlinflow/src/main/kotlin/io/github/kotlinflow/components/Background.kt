@@ -48,6 +48,9 @@ fun Background(
             val startY = (vp.y % spacing + spacing) % spacing
 
             when (variant) {
+                BackgroundVariant.NONE -> {
+                    // No background pattern rendered
+                }
                 BackgroundVariant.DOTS -> {
                     val radius = sizePx * zoom / 2f
                     val dotDiameter = max(radius * 2f, 1.5f)
