@@ -2,6 +2,7 @@
 
 <p align="left">
   <a href="https://central.sonatype.com/artifact/io.github.joaonart/kotlinflow"><img src="https://img.shields.io/maven-central/v/io.github.joaonart/kotlinflow?color=007ec6&label=Maven%20Central" alt="Maven Central" /></a>
+  <a href="https://joaonart.github.io/KotlinFlow/"><img src="https://img.shields.io/badge/docs-GitHub%20Pages-2563EB.svg" alt="GitHub Pages Documentation" /></a>
   <a href="https://kotlinlang.org"><img src="https://img.shields.io/badge/Kotlin-2.0.21-7F52FF.svg?logo=kotlin&logoColor=white" alt="Kotlin" /></a>
   <a href="https://developer.android.com/jetpack/compose"><img src="https://img.shields.io/badge/Android-Jetpack%20Compose-3DDC84.svg?logo=android&logoColor=white" alt="Android Jetpack Compose" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT" /></a>
