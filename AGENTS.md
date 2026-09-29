@@ -13,7 +13,7 @@ KotlinFlow is a declarative, high-performance node-based graph and workflow UI l
 ```kotlin
 dependencies {
     // KotlinFlow Core Library
-    implementation("io.github.kotlinflow:kotlinflow:1.0.0")
+    implementation("io.github.joaonart:kotlinflow:1.0.1")
 
     // Required Jetpack Compose & Foundation
     implementation(platform("androidx.compose:compose-bom:2024.09.00"))

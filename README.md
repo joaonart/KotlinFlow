@@ -97,7 +97,7 @@ KotlinFlow is available on **Maven Central**. Add the dependency to your module'
 ```kotlin
 // app/build.gradle.kts
 dependencies {
-    implementation("io.github.joaonart:kotlinflow:1.0.0")
+    implementation("io.github.joaonart:kotlinflow:1.0.1")
 }
 ```
 
@@ -119,7 +119,7 @@ Add the dependency to your module's `build.gradle.kts`:
 
 ```kotlin
 dependencies {
-    implementation("com.github.joaonart.KotlinFlow:kotlinflow:v1.0.0")
+    implementation("com.github.joaonart.KotlinFlow:kotlinflow:v1.0.1")
 }
 ```
 
@@ -147,7 +147,7 @@ Add the dependency to your module's `build.gradle.kts`:
 
 ```kotlin
 dependencies {
-    implementation("com.github.joaonart:kotlinflow:1.0.0")
+    implementation("com.github.joaonart:kotlinflow:1.0.1")
 }
 ```
 

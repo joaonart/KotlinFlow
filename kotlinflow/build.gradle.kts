@@ -72,7 +72,7 @@ dependencies {
 
 val releaseVersion = project.findProperty("VERSION_NAME") as String?
     ?: System.getenv("VERSION_NAME")?.removePrefix("v")
-    ?: "1.0.0"
+    ?: "1.0.1"
 
 // Resolve and normalize GPG signing credentials for reliable CI/CD signing
 val rawSigningKey = (project.findProperty("signingInMemoryKey") as String?)
