@@ -40,6 +40,7 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Storage
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.filled.ViewCompact
+import androidx.compose.material.icons.filled.SwapVert
 import androidx.compose.foundation.Canvas
 import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.Edit
@@ -279,6 +280,198 @@ fun KotlinFlowSampleApp(
     }
 }
 
+fun getN8nNodes(isVertical: Boolean): List<Node<N8nNodeData>> {
+    return if (isVertical) {
+        listOf(
+            // 1. Meeting Availability Agent (Top, centered on canvas)
+            Node(
+                id = "agent",
+                position = XYPosition(60f, 60f),
+                width = 770f,
+                height = 240f,
+                data = N8nNodeData(
+                    title = "Meeting\nAvailability Agent",
+                    subtitle = "Tools Agent",
+                    kind = N8nNodeKind.AGENT,
+                    iconType = "robot"
+                ),
+                type = "n8n"
+            ),
+            // 2. Model (Sub-node circle, OpenAI - under Chat Model port)
+            Node(
+                id = "sub-model",
+                position = XYPosition(10f, 430f),
+                width = 280f,
+                height = 280f,
+                data = N8nNodeData(
+                    title = "Model",
+                    kind = N8nNodeKind.SUB_NODE_CIRCLE,
+                    topBadge = "Model",
+                    iconType = "openai"
+                ),
+                type = "n8n"
+            ),
+            // 3. Availability (Sub-node circle, Google Calendar - under Tool port)
+            Node(
+                id = "sub-calendar",
+                position = XYPosition(250f, 430f),
+                width = 280f,
+                height = 280f,
+                data = N8nNodeData(
+                    title = "Availability",
+                    subtitle = "availability: calendar",
+                    kind = N8nNodeKind.SUB_NODE_CIRCLE,
+                    iconType = "calendar"
+                ),
+                type = "n8n"
+            ),
+            // 4. Output (Sub-node circle, Code brackets - under Output Parser port)
+            Node(
+                id = "sub-output",
+                position = XYPosition(640f, 430f),
+                width = 280f,
+                height = 280f,
+                data = N8nNodeData(
+                    title = "Output",
+                    kind = N8nNodeKind.SUB_NODE_CIRCLE,
+                    topBadge = "Output Parser",
+                    iconType = "code"
+                ),
+                type = "n8n"
+            ),
+            // 5. Generate Message (Action square - descending vertically)
+            Node(
+                id = "generate-msg",
+                position = XYPosition(260f, 800f),
+                width = 770f,
+                height = 200f,
+                data = N8nNodeData(
+                    title = "Generate Message",
+                    subtitle = "manual",
+                    kind = N8nNodeKind.ACTION_SQUARE,
+                    iconType = "edit",
+                    accentColor = Color(0xFF5E5CE6)
+                ),
+                type = "n8n"
+            ),
+            // 6. Send for Human Approval (Gmail action square)
+            Node(
+                id = "human-approval",
+                position = XYPosition(260f, 1080f),
+                width = 770f,
+                height = 200f,
+                data = N8nNodeData(
+                    title = "Send for Human Approval",
+                    subtitle = "sendAndWait: message",
+                    kind = N8nNodeKind.ACTION_SQUARE,
+                    iconType = "gmail"
+                ),
+                type = "n8n"
+            ),
+            // 7. [+] Add Next Step button
+            Node(
+                id = "add-step",
+                position = XYPosition(260f, 1360f),
+                width = 770f,
+                height = 100f,
+                data = N8nNodeData(
+                    title = "",
+                    kind = N8nNodeKind.ADD_BUTTON,
+                    iconType = "add"
+                ),
+                type = "n8n"
+            )
+        )
+    } else {
+        listOf(
+            // 1. Meeting Availability Agent (Main Agent wide card)
+            Node(
+                id = "agent",
+                position = XYPosition(100f, 200f),
+                data = N8nNodeData(
+                    title = "Meeting\nAvailability Agent",
+                    subtitle = "Tools Agent",
+                    kind = N8nNodeKind.AGENT,
+                    iconType = "robot"
+                ),
+                type = "n8n"
+            ),
+            // 2. Generate Message (Action square)
+            Node(
+                id = "generate-msg",
+                position = XYPosition(1150f, 215f),
+                data = N8nNodeData(
+                    title = "Generate Message",
+                    subtitle = "manual",
+                    kind = N8nNodeKind.ACTION_SQUARE,
+                    iconType = "edit",
+                    accentColor = Color(0xFF5E5CE6)
+                ),
+                type = "n8n"
+            ),
+            // 3. Send for Human Approval (Gmail action square)
+            Node(
+                id = "human-approval",
+                position = XYPosition(1650f, 215f),
+                data = N8nNodeData(
+                    title = "Send for Human Approval",
+                    subtitle = "sendAndWait: message",
+                    kind = N8nNodeKind.ACTION_SQUARE,
+                    iconType = "gmail"
+                ),
+                type = "n8n"
+            ),
+            // 4. [+] Add Next Step button
+            Node(
+                id = "add-step",
+                position = XYPosition(2120f, 265f),
+                data = N8nNodeData(
+                    title = "",
+                    kind = N8nNodeKind.ADD_BUTTON,
+                    iconType = "add"
+                ),
+                type = "n8n"
+            ),
+            // 5. Model (Sub-node circle, OpenAI)
+            Node(
+                id = "sub-model",
+                position = XYPosition(50f, 850f),
+                data = N8nNodeData(
+                    title = "Model",
+                    kind = N8nNodeKind.SUB_NODE_CIRCLE,
+                    topBadge = "Model",
+                    iconType = "openai"
+                ),
+                type = "n8n"
+            ),
+            // 6. Availability (Sub-node circle, Google Calendar 31)
+            Node(
+                id = "sub-calendar",
+                position = XYPosition(450f, 850f),
+                data = N8nNodeData(
+                    title = "Availability",
+                    subtitle = "availability: calendar",
+                    kind = N8nNodeKind.SUB_NODE_CIRCLE,
+                    iconType = "calendar"
+                ),
+                type = "n8n"
+            ),
+            // 7. Output (Sub-node circle, Code brackets)
+            Node(
+                id = "sub-output",
+                position = XYPosition(850f, 850f),
+                data = N8nNodeData(
+                    title = "Output",
+                    kind = N8nNodeKind.SUB_NODE_CIRCLE,
+                    topBadge = "Output Parser",
+                    iconType = "code"
+                ),
+                type = "n8n"
+            )
+        )
+    }
+}
+
 @Composable
 fun InteractiveCanvasDemo(
     isDarkTheme: Boolean,
@@ -286,6 +479,7 @@ fun InteractiveCanvasDemo(
     onCloseConfigPanel: () -> Unit = {}
 ) {
     var isN8nView by rememberSaveable { mutableStateOf(true) }
+    var isN8nVertical by rememberSaveable { mutableStateOf(true) }
     var isCompactNodes by rememberSaveable { mutableStateOf(false) }
 
     // Standard DAG pipeline nodes (symmetrically balanced diamond layout)
@@ -358,95 +552,8 @@ fun InteractiveCanvasDemo(
     }
 
     // n8n workflow nodes and edges (authentic n8n AI agent canvas layout)
-    var n8nNodes by remember {
-        mutableStateOf(
-            listOf(
-                // 1. Meeting Availability Agent (Main Agent wide card)
-                Node(
-                    id = "agent",
-                    position = XYPosition(100f, 200f),
-                    data = N8nNodeData(
-                        title = "Meeting\nAvailability Agent",
-                        subtitle = "Tools Agent",
-                        kind = N8nNodeKind.AGENT,
-                        iconType = "robot"
-                    ),
-                    type = "n8n"
-                ),
-                // 2. Generate Message (Action square)
-                Node(
-                    id = "generate-msg",
-                    position = XYPosition(1150f, 215f),
-                    data = N8nNodeData(
-                        title = "Generate Message",
-                        subtitle = "manual",
-                        kind = N8nNodeKind.ACTION_SQUARE,
-                        iconType = "edit",
-                        accentColor = Color(0xFF5E5CE6)
-                    ),
-                    type = "n8n"
-                ),
-                // 3. Send for Human Approval (Gmail action square)
-                Node(
-                    id = "human-approval",
-                    position = XYPosition(1650f, 215f),
-                    data = N8nNodeData(
-                        title = "Send for Human Approval",
-                        subtitle = "sendAndWait: message",
-                        kind = N8nNodeKind.ACTION_SQUARE,
-                        iconType = "gmail"
-                    ),
-                    type = "n8n"
-                ),
-                // 4. [+] Add Next Step button
-                Node(
-                    id = "add-step",
-                    position = XYPosition(2120f, 265f),
-                    data = N8nNodeData(
-                        title = "",
-                        kind = N8nNodeKind.ADD_BUTTON,
-                        iconType = "add"
-                    ),
-                    type = "n8n"
-                ),
-                // 5. Model (Sub-node circle, OpenAI)
-                Node(
-                    id = "sub-model",
-                    position = XYPosition(50f, 850f),
-                    data = N8nNodeData(
-                        title = "Model",
-                        kind = N8nNodeKind.SUB_NODE_CIRCLE,
-                        topBadge = "Model",
-                        iconType = "openai"
-                    ),
-                    type = "n8n"
-                ),
-                // 6. Availability (Sub-node circle, Google Calendar 31)
-                Node(
-                    id = "sub-calendar",
-                    position = XYPosition(450f, 850f),
-                    data = N8nNodeData(
-                        title = "Availability",
-                        subtitle = "availability: calendar",
-                        kind = N8nNodeKind.SUB_NODE_CIRCLE,
-                        iconType = "calendar"
-                    ),
-                    type = "n8n"
-                ),
-                // 7. Output (Sub-node circle, Code brackets)
-                Node(
-                    id = "sub-output",
-                    position = XYPosition(850f, 850f),
-                    data = N8nNodeData(
-                        title = "Output",
-                        kind = N8nNodeKind.SUB_NODE_CIRCLE,
-                        topBadge = "Output Parser",
-                        iconType = "code"
-                    ),
-                    type = "n8n"
-                )
-            )
-        )
+    var n8nNodes by remember(isN8nVertical) {
+        mutableStateOf(getN8nNodes(isN8nVertical))
     }
 
     var n8nEdges by remember(isDarkTheme) {
@@ -539,8 +646,8 @@ fun InteractiveCanvasDemo(
     var backgroundVariant by rememberSaveable { mutableStateOf(BackgroundVariant.DOTS) }
     val flowInstance = remember { KotlinFlowInstance() }
 
-    // Re-frame view smoothly whenever switching between Standard and n8n views or compact mode
-    LaunchedEffect(isN8nView, isCompactNodes) {
+    // Re-frame view smoothly whenever switching between Standard and n8n views, compact mode or orientation
+    LaunchedEffect(isN8nView, isCompactNodes, isN8nVertical) {
         delay(300)
         if (isN8nView) {
             flowInstance.fitView(n8nNodes)
@@ -669,7 +776,66 @@ fun InteractiveCanvasDemo(
                             )
                         }
 
-                        // Row 2: Compact Nodes Switch
+                        // Row 2: Orientation Selector (When in n8n mode)
+                        if (isN8nView) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(26.dp)
+                                            .background(
+                                                color = if (isDarkTheme) Color(0xFF10B981).copy(alpha = 0.25f) else Color(0xFFD1FAE5),
+                                                shape = RoundedCornerShape(6.dp)
+                                            ),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.SwapVert,
+                                            contentDescription = "Orientation",
+                                            tint = Color(0xFF10B981),
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                    }
+                                    Column {
+                                        Text(
+                                            text = "Orientation",
+                                            fontSize = 12.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = if (isDarkTheme) Color.White else Color(0xFF1E293B)
+                                        )
+                                        Text(
+                                            text = if (isN8nVertical) "Vertical (Mobile)" else "Horizontal (Desktop)",
+                                            fontSize = 10.sp,
+                                            color = if (isDarkTheme) Color(0xFF94A3B8) else Color(0xFF64748B)
+                                        )
+                                    }
+                                }
+
+                                Spacer(modifier = Modifier.width(12.dp))
+
+                                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                                    FilterChip(
+                                        selected = isN8nVertical,
+                                        onClick = { isN8nVertical = true },
+                                        label = { Text("Vertical", fontSize = 10.sp) }
+                                    )
+                                    FilterChip(
+                                        selected = !isN8nVertical,
+                                        onClick = { isN8nVertical = false },
+                                        label = { Text("Horizontal", fontSize = 10.sp) }
+                                    )
+                                }
+                            }
+                        }
+
+                        // Row 3: Compact Nodes Switch
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             verticalAlignment = Alignment.CenterVertically,
@@ -772,7 +938,7 @@ fun InteractiveCanvasDemo(
                 kotlinFlowInstance = flowInstance,
                 overlay = overlayContent
             ) { node ->
-                N8nNodeCard(node = node, isDarkTheme = isDarkTheme, isCompact = isCompactNodes)
+                N8nNodeCard(node = node, isDarkTheme = isDarkTheme, isCompact = isCompactNodes, isVertical = isN8nVertical)
             }
         } else {
             KotlinFlow(
@@ -894,7 +1060,8 @@ fun OpenAIIcon(modifier: Modifier = Modifier) {
 fun N8nNodeCard(
     node: Node<N8nNodeData>,
     isDarkTheme: Boolean = false,
-    isCompact: Boolean = false
+    isCompact: Boolean = false,
+    isVertical: Boolean = false
 ) {
     val data = node.data
     val cardBg = if (isDarkTheme) Color(0xFF26262B) else Color.White
@@ -950,49 +1117,58 @@ fun N8nNodeCard(
 
             // Input handle if applicable
             if (data.kind != N8nNodeKind.AGENT && data.kind != N8nNodeKind.ADD_BUTTON) {
+                val inPos = if (data.kind == N8nNodeKind.SUB_NODE_CIRCLE || isVertical) Position.TOP else Position.LEFT
                 Handle(
                     nodeId = node.id,
                     id = if (data.kind == N8nNodeKind.SUB_NODE_CIRCLE) "top" else "in",
                     type = HandleType.TARGET,
-                    position = if (data.kind == N8nNodeKind.SUB_NODE_CIRCLE) Position.TOP else Position.LEFT,
+                    position = inPos,
                     color = handleColor,
                     size = 10.dp,
                     borderColor = cardBg,
                     borderWidth = 2.dp,
-                    modifier = Modifier
-                        .align(Alignment.CenterStart)
-                        .offset(x = (-5).dp)
+                    modifier = if (inPos == Position.TOP) {
+                        Modifier.align(Alignment.TopCenter).offset(y = (-5).dp)
+                    } else {
+                        Modifier.align(Alignment.CenterStart).offset(x = (-5).dp)
+                    }
                 )
             } else if (data.kind == N8nNodeKind.ADD_BUTTON) {
+                val inPos = if (isVertical) Position.TOP else Position.LEFT
                 Handle(
                     nodeId = node.id,
                     id = "in",
                     type = HandleType.TARGET,
-                    position = Position.LEFT,
+                    position = inPos,
                     color = handleColor,
                     size = 10.dp,
                     borderColor = cardBg,
                     borderWidth = 2.dp,
-                    modifier = Modifier
-                        .align(Alignment.CenterStart)
-                        .offset(x = (-5).dp)
+                    modifier = if (inPos == Position.TOP) {
+                        Modifier.align(Alignment.TopCenter).offset(y = (-5).dp)
+                    } else {
+                        Modifier.align(Alignment.CenterStart).offset(x = (-5).dp)
+                    }
                 )
             }
 
             // Output handle
             if (data.kind != N8nNodeKind.ADD_BUTTON && data.kind != N8nNodeKind.SUB_NODE_CIRCLE) {
+                val outPos = if (isVertical && data.kind != N8nNodeKind.AGENT) Position.BOTTOM else Position.RIGHT
                 Handle(
                     nodeId = node.id,
                     id = "out",
                     type = HandleType.SOURCE,
-                    position = Position.RIGHT,
+                    position = outPos,
                     color = handleColor,
                     size = 10.dp,
                     borderColor = cardBg,
                     borderWidth = 2.dp,
-                    modifier = Modifier
-                        .align(Alignment.CenterEnd)
-                        .offset(x = 5.dp)
+                    modifier = if (outPos == Position.BOTTOM) {
+                        Modifier.align(Alignment.BottomCenter).offset(y = 5.dp)
+                    } else {
+                        Modifier.align(Alignment.CenterEnd).offset(x = 5.dp)
+                    }
                 )
             }
         }
@@ -1250,45 +1426,279 @@ fun N8nNodeCard(
             }
 
             N8nNodeKind.ACTION_SQUARE -> {
-                // Square 72x72dp card with icon inside and labels below
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.width(130.dp)
-                ) {
+                if (isVertical) {
+                    // Vertical row: 72x72 square icon on left, title & subtitle on right
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(14.dp),
+                        modifier = Modifier.width(280.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier.size(72.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .shadow(6.dp, RoundedCornerShape(12.dp))
+                                    .border(1.dp, cardBorder, RoundedCornerShape(12.dp)),
+                                shape = RoundedCornerShape(12.dp),
+                                colors = CardDefaults.cardColors(containerColor = cardBg)
+                            ) {
+                                Box(
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    if (data.iconType == "edit") {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(46.dp)
+                                                .clip(RoundedCornerShape(12.dp))
+                                                .background(Color(0xFF5E5CE6)),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Edit,
+                                                contentDescription = null,
+                                                tint = Color.White,
+                                                modifier = Modifier.size(24.dp)
+                                            )
+                                        }
+                                    } else if (data.iconType == "gmail") {
+                                        GmailIcon(modifier = Modifier.size(34.dp))
+                                    }
+                                }
+                            }
+
+                            // Top Circle Handle (In)
+                            Handle(
+                                nodeId = node.id,
+                                id = "in",
+                                type = HandleType.TARGET,
+                                position = Position.TOP,
+                                color = handleColor,
+                                size = 12.dp,
+                                borderColor = cardBg,
+                                borderWidth = 2.dp,
+                                modifier = Modifier
+                                    .align(Alignment.TopCenter)
+                                    .offset(y = (-6).dp)
+                            )
+
+                            // Bottom Circle Handle (Out)
+                            Handle(
+                                nodeId = node.id,
+                                id = "out",
+                                type = HandleType.SOURCE,
+                                position = Position.BOTTOM,
+                                color = handleColor,
+                                size = 12.dp,
+                                borderColor = cardBg,
+                                borderWidth = 2.dp,
+                                modifier = Modifier
+                                    .align(Alignment.BottomCenter)
+                                    .offset(y = 6.dp)
+                            )
+                        }
+
+                        Column(modifier = Modifier.weight(1f, fill = false)) {
+                            Text(
+                                text = data.title,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 13.sp,
+                                color = titleColor,
+                                maxLines = 2
+                            )
+                            if (data.subtitle != null) {
+                                Spacer(modifier = Modifier.height(3.dp))
+                                Text(
+                                    text = data.subtitle,
+                                    fontSize = 11.sp,
+                                    color = subtitleColor,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
+                        }
+                    }
+                } else {
+                    // Square 72x72dp card with icon inside and labels below (Horizontal desktop layout)
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.width(130.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier.size(72.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .shadow(6.dp, RoundedCornerShape(12.dp))
+                                    .border(1.dp, cardBorder, RoundedCornerShape(12.dp)),
+                                shape = RoundedCornerShape(12.dp),
+                                colors = CardDefaults.cardColors(containerColor = cardBg)
+                            ) {
+                                Box(
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    if (data.iconType == "edit") {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(46.dp)
+                                                .clip(RoundedCornerShape(12.dp))
+                                                .background(Color(0xFF5E5CE6)),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Edit,
+                                                contentDescription = null,
+                                                tint = Color.White,
+                                                modifier = Modifier.size(24.dp)
+                                            )
+                                        }
+                                    } else if (data.iconType == "gmail") {
+                                        GmailIcon(modifier = Modifier.size(34.dp))
+                                    }
+                                }
+                            }
+
+                            // Left Circle Handle
+                            Handle(
+                                nodeId = node.id,
+                                id = "in",
+                                type = HandleType.TARGET,
+                                position = Position.LEFT,
+                                color = handleColor,
+                                size = 12.dp,
+                                borderColor = cardBg,
+                                borderWidth = 2.dp,
+                                modifier = Modifier
+                                    .align(Alignment.CenterStart)
+                                    .offset(x = (-6).dp)
+                            )
+
+                            // Right Circle Handle
+                            Handle(
+                                nodeId = node.id,
+                                id = "out",
+                                type = HandleType.SOURCE,
+                                position = Position.RIGHT,
+                                color = handleColor,
+                                size = 12.dp,
+                                borderColor = cardBg,
+                                borderWidth = 2.dp,
+                                modifier = Modifier
+                                    .align(Alignment.CenterEnd)
+                                    .offset(x = 6.dp)
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Text(
+                            text = data.title,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 12.sp,
+                            color = titleColor,
+                            textAlign = TextAlign.Center
+                        )
+                        if (data.subtitle != null) {
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = data.subtitle,
+                                fontSize = 10.sp,
+                                color = subtitleColor,
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    }
+                }
+            }
+
+            N8nNodeKind.ADD_BUTTON -> {
+                if (isVertical) {
+                    // Vertical row: 34dp [+] button aligned with action squares, "Add step" label on right
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(14.dp),
+                        modifier = Modifier.width(280.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .padding(start = 19.dp)
+                                .size(34.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .shadow(3.dp, RoundedCornerShape(8.dp))
+                                    .border(1.dp, cardBorder, RoundedCornerShape(8.dp)),
+                                shape = RoundedCornerShape(8.dp),
+                                colors = CardDefaults.cardColors(containerColor = cardBg)
+                            ) {
+                                Box(
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Add,
+                                        contentDescription = null,
+                                        tint = titleColor,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                }
+                            }
+
+                            // Top Circle Handle
+                            Handle(
+                                nodeId = node.id,
+                                id = "in",
+                                type = HandleType.TARGET,
+                                position = Position.TOP,
+                                color = handleColor,
+                                size = 10.dp,
+                                borderColor = cardBg,
+                                borderWidth = 2.dp,
+                                modifier = Modifier
+                                    .align(Alignment.TopCenter)
+                                    .offset(y = (-5).dp)
+                            )
+                        }
+
+                        Text(
+                            text = "Add step",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = subtitleColor
+                        )
+                    }
+                } else {
+                    // Mini 34x34dp [+] button (Horizontal desktop layout)
                     Box(
-                        modifier = Modifier.size(72.dp),
+                        modifier = Modifier.size(34.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         Card(
                             modifier = Modifier
                                 .fillMaxSize()
-                                .shadow(6.dp, RoundedCornerShape(12.dp))
-                                .border(1.dp, cardBorder, RoundedCornerShape(12.dp)),
-                            shape = RoundedCornerShape(12.dp),
+                                .shadow(3.dp, RoundedCornerShape(8.dp))
+                                .border(1.dp, cardBorder, RoundedCornerShape(8.dp)),
+                            shape = RoundedCornerShape(8.dp),
                             colors = CardDefaults.cardColors(containerColor = cardBg)
                         ) {
                             Box(
                                 modifier = Modifier.fillMaxSize(),
                                 contentAlignment = Alignment.Center
                             ) {
-                                if (data.iconType == "edit") {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(46.dp)
-                                            .clip(RoundedCornerShape(12.dp))
-                                            .background(Color(0xFF5E5CE6)),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.Edit,
-                                            contentDescription = null,
-                                            tint = Color.White,
-                                            modifier = Modifier.size(24.dp)
-                                        )
-                                    }
-                                } else if (data.iconType == "gmail") {
-                                    GmailIcon(modifier = Modifier.size(34.dp))
-                                }
+                                Icon(
+                                    imageVector = Icons.Default.Add,
+                                    contentDescription = null,
+                                    tint = titleColor,
+                                    modifier = Modifier.size(16.dp)
+                                )
                             }
                         }
 
@@ -1299,92 +1709,14 @@ fun N8nNodeCard(
                             type = HandleType.TARGET,
                             position = Position.LEFT,
                             color = handleColor,
-                            size = 12.dp,
+                            size = 10.dp,
                             borderColor = cardBg,
                             borderWidth = 2.dp,
                             modifier = Modifier
                                 .align(Alignment.CenterStart)
-                                .offset(x = (-6).dp)
-                        )
-
-                        // Right Circle Handle
-                        Handle(
-                            nodeId = node.id,
-                            id = "out",
-                            type = HandleType.SOURCE,
-                            position = Position.RIGHT,
-                            color = handleColor,
-                            size = 12.dp,
-                            borderColor = cardBg,
-                            borderWidth = 2.dp,
-                            modifier = Modifier
-                                .align(Alignment.CenterEnd)
-                                .offset(x = 6.dp)
+                                .offset(x = (-5).dp)
                         )
                     }
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Text(
-                        text = data.title,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 12.sp,
-                        color = titleColor,
-                        textAlign = TextAlign.Center
-                    )
-                    if (data.subtitle != null) {
-                        Spacer(modifier = Modifier.height(2.dp))
-                        Text(
-                            text = data.subtitle,
-                            fontSize = 10.sp,
-                            color = subtitleColor,
-                            textAlign = TextAlign.Center
-                        )
-                    }
-                }
-            }
-
-            N8nNodeKind.ADD_BUTTON -> {
-                // Mini 34x34dp [+] button
-                Box(
-                    modifier = Modifier.size(34.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Card(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .shadow(3.dp, RoundedCornerShape(8.dp))
-                            .border(1.dp, cardBorder, RoundedCornerShape(8.dp)),
-                        shape = RoundedCornerShape(8.dp),
-                        colors = CardDefaults.cardColors(containerColor = cardBg)
-                    ) {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Add,
-                                contentDescription = null,
-                                tint = titleColor,
-                                modifier = Modifier.size(16.dp)
-                            )
-                        }
-                    }
-
-                    // Left Circle Handle
-                    Handle(
-                        nodeId = node.id,
-                        id = "in",
-                        type = HandleType.TARGET,
-                        position = Position.LEFT,
-                        color = handleColor,
-                        size = 10.dp,
-                        borderColor = cardBg,
-                        borderWidth = 2.dp,
-                        modifier = Modifier
-                            .align(Alignment.CenterStart)
-                            .offset(x = (-5).dp)
-                    )
                 }
             }
 

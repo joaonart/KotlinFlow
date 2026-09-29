@@ -10,20 +10,20 @@ KotlinFlow brings full-featured node-based graph editing to Android apps. Design
 
 Experience KotlinFlow running natively on Android with hardware-accelerated pan & zoom, custom node cards, auto-layout algorithms, and dynamic light/dark theming:
 
-| **Interactive Canvas (Light Mode)** | **n8n Automation Mode (Dark Mode)** |
+| **n8n Workflow (Vertical / Mobile-First)** | **n8n Workflow (Horizontal Canvas)** |
 |:---:|:---:|
-| <img src="assets/interactive_canvas_standard.png" width="360" alt="KotlinFlow Interactive Canvas in Light Mode" /> | <img src="assets/n8n_mode_dark.png" width="360" alt="KotlinFlow n8n Automation Mode in Dark Mode" /> |
-| *Standard DAG flow with connection handles, edge labels, MiniMap & Controls* | *n8n-style workflow with execution status badges, metric pills & bezier curves* |
+| <img src="assets/n8n_mode_vertical.png" width="360" alt="KotlinFlow n8n Mode in Vertical Portrait Layout" /> | <img src="assets/n8n_mode_dark.png" width="360" alt="KotlinFlow n8n Automation Mode in Dark Mode" /> |
+| *Vertical top-to-bottom pipeline optimized for mobile portrait screens with branch routing* | *Full horizontal canvas view with execution status badges, metric pills & bezier curves* |
 
-| **High-Density Compact Nodes** | **Live Flow Settings & Background Patterns** |
+| **Interactive Canvas (Light Mode)** | **High-Density Compact Nodes** |
 |:---:|:---:|
-| <img src="assets/compact_nodes_view.png" width="360" alt="KotlinFlow High-Density Compact Nodes" /> | <img src="assets/flow_settings_panel.png" width="360" alt="KotlinFlow Settings Panel and Grid Patterns" /> |
-| *High-density layout ideal for complex pipelines and microservice architectures* | *Interactive settings panel with live grid pattern toggles (Dots, Lines, Cross, None)* |
+| <img src="assets/interactive_canvas_standard.png" width="360" alt="KotlinFlow Interactive Canvas in Light Mode" /> | <img src="assets/compact_nodes_view.png" width="360" alt="KotlinFlow High-Density Compact Nodes" /> |
+| *Standard DAG flow with connection handles, edge labels, MiniMap & Controls* | *High-density layout ideal for complex pipelines and microservice architectures* |
 
-<p align="center">
-  <img src="assets/auto_layout_demo.png" width="360" alt="KotlinFlow Automatic Graph Layout Engine" /><br />
-  <em><b>Automatic Graph Layout Engine</b>: Hierarchical Tree (L-to-R / T-to-B), Grid, and physics-based Force-Directed layout</em>
-</p>
+| **Live Flow Settings & Background Patterns** | **Automatic Graph Layout Engine** |
+|:---:|:---:|
+| <img src="assets/flow_settings_panel.png" width="360" alt="KotlinFlow Settings Panel and Grid Patterns" /> | <img src="assets/auto_layout_demo.png" width="360" alt="KotlinFlow Automatic Graph Layout Engine" /> |
+| *Interactive settings panel with live grid pattern toggles (Dots, Lines, Cross, None)* | *Hierarchical Tree (L-to-R / T-to-B), Grid, and physics-based Force-Directed layout* |
 
 ---
 
@@ -54,7 +54,7 @@ Experience KotlinFlow running natively on Android with hardware-accelerated pan 
   - `NodeResizer`: Draggable 8-direction bounding box handles for dynamic node resizing.
   - `ViewportPortal`: Render arbitrary Jetpack Compose components anchored in graph coordinate space.
 - **Rich Visual Modes**:
-  - **n8n Automation Workflows**: Specialized automation cards featuring execution status indicators (Listening, Success, Evaluated, Sent), execution duration metrics, item counts, and status pills.
+  - **n8n Automation Workflows**: Specialized automation cards featuring execution status indicators (Listening, Success, Evaluated, Sent), execution duration metrics, item counts, and status pills. Supports both **Vertical (top-to-bottom, mobile-optimized)** and **Horizontal (wide canvas)** orientations with dynamic handle repositioning (`TOP`/`BOTTOM` vs `LEFT`/`RIGHT`).
   - **High-Density Compact Nodes**: Compact representation for dense enterprise topologies and extensive decision trees.
   - **Dynamic Theming**: Seamless switching between **Light** and **Dark** color modes with adaptive node borders, shadow elevation, and connection handle contrast.
 - **Built-in Auto Layout Engine**:
