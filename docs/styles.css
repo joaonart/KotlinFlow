@@ -284,9 +284,15 @@ body {
 /* ==========================================================================
    Hero Section
    ========================================================================== */
+.section {
+  padding: 80px 0;
+  scroll-margin-top: 84px;
+}
+
 .hero {
   padding: 72px 0 60px;
   text-align: center;
+  scroll-margin-top: 84px;
 }
 
 .hero-pill {
@@ -406,6 +412,9 @@ body {
   height: 440px;
   display: block;
   cursor: grab;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
   background: radial-gradient(circle, var(--border-subtle) 1.5px, transparent 1.5px);
   background-size: 24px 24px;
 }
@@ -933,18 +942,64 @@ body {
   color: var(--text-muted);
 }
 
+/* Mobile Nav Drawer */
+.mobile-menu-btn {
+  display: none;
+}
+
+.mobile-nav-drawer {
+  display: none;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 16px 24px;
+}
+
+.mobile-nav-drawer.open {
+  display: block;
+}
+
+.mobile-nav-menu {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mobile-nav-link {
+  color: var(--text-main);
+  text-decoration: none;
+  font-size: 1rem;
+  font-weight: 600;
+  display: block;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.mobile-nav-link:last-child {
+  border-bottom: none;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .nav-menu {
     display: none;
   }
+  .mobile-menu-btn {
+    display: flex;
+  }
+  .search-text, .search-kbd {
+    display: none;
+  }
+  .btn-search-trigger {
+    padding: 8px 10px;
+  }
   .hero-title {
-    font-size: 2.25rem;
+    font-size: 2.1rem;
   }
   .features-grid {
     grid-template-columns: 1fr;
   }
   #interactive-canvas {
-    height: 340px;
+    height: 420px;
   }
 }
