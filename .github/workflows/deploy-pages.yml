@@ -12,29 +12,36 @@ on:
       - 'docs/**'
       - '.github/workflows/deploy-pages.yml'
 
-# Permissions required to push the built docs to the gh-pages branch
+# Permissions required for official GitHub Pages deployment
 permissions:
-  contents: write
+  contents: read
+  pages: write
+  id-token: write
 
 concurrency:
-  group: 'gh-pages'
-  cancel-in-progress: true
+  group: 'pages'
+  cancel-in-progress: false
 
 jobs:
   deploy:
-    name: Deploy Docs to GitHub Pages
+    name: Deploy to GitHub Pages
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      - name: Deploy docs directory to gh-pages branch
-        uses: peaceiris/actions-gh-pages@v4
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages Artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./docs
-          keep_files: false
-          commit_message: "deploy(docs): update GitHub Pages from ${{ github.sha }}"
+          path: 'docs'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
