@@ -533,7 +533,12 @@ body {
   overflow: hidden;
   max-width: 400px;
   width: 100%;
-  transition: transform var(--transition-smooth);
+  transition: max-width 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-radius 0.35s ease, transform var(--transition-smooth);
+}
+
+.device-frame.landscape {
+  max-width: 896px;
+  border-radius: 30px;
 }
 
 .device-frame img {
@@ -1112,6 +1117,9 @@ body {
   .device-frame {
     border-width: 6px;
     border-radius: 26px;
+  }
+  .device-frame.landscape {
+    border-radius: 18px;
   }
   .feature-card {
     padding: 22px;

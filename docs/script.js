@@ -80,6 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const showcaseTabs = document.querySelectorAll('.showcase-tab');
   const showcaseImg = document.getElementById('showcase-img');
   const showcaseCaption = document.getElementById('showcase-caption');
+  const deviceFrame = showcaseImg?.closest('.device-frame');
 
   // Preload all showcase images for instant switching
   showcaseTabs.forEach(tab => {
@@ -90,6 +91,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  function updateFrameOrientation(isLandscape) {
+    if (!deviceFrame) return;
+    if (isLandscape) {
+      deviceFrame.classList.add('landscape');
+    } else {
+      deviceFrame.classList.remove('landscape');
+    }
+  }
+
   showcaseTabs.forEach(tab => {
     tab.addEventListener('click', (e) => {
       e.preventDefault();
@@ -98,6 +108,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const imgPath = tab.getAttribute('data-img');
       const captionText = tab.getAttribute('data-caption');
+      const isLandscape = tab.getAttribute('data-orientation') === 'landscape' || (imgPath && imgPath.includes('n8n_mode_dark'));
+
+      updateFrameOrientation(isLandscape);
 
       if (showcaseImg && imgPath) {
         showcaseImg.style.opacity = '0.2';
@@ -114,6 +127,14 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   });
+
+  if (showcaseImg) {
+    showcaseImg.addEventListener('load', () => {
+      if (showcaseImg.naturalWidth && showcaseImg.naturalHeight) {
+        updateFrameOrientation(showcaseImg.naturalWidth > showcaseImg.naturalHeight);
+      }
+    });
+  }
 
   // ==========================================================================
   // 5. Code Quickstart Tabs & Robust Clipboard Copy
