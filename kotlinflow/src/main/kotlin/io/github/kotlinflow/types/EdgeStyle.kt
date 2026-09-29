@@ -12,5 +12,6 @@ import kotlinx.serialization.Serializable
 data class EdgeStyle(
     val strokeColor: @Serializable(with = ColorSerializer::class) Color? = null,
     val strokeWidth: Float? = null,
-    val opacity: Float? = null
+    val opacity: Float? = null,
+    val dashed: Boolean = false
 )

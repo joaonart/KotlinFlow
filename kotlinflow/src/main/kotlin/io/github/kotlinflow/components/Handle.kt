@@ -24,6 +24,21 @@ import io.github.kotlinflow.state.LocalKotlinFlowState
 import io.github.kotlinflow.types.HandleType
 import io.github.kotlinflow.types.Position
 
+import androidx.compose.foundation.shape.GenericShape
+import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.layout.LayoutCoordinates
+
+val LocalNodeCoordinates = compositionLocalOf<LayoutCoordinates?> { null }
+
+val DiamondShape: Shape = GenericShape { size, _ ->
+    moveTo(size.width / 2f, 0f)
+    lineTo(size.width, size.height / 2f)
+    lineTo(size.width / 2f, size.height)
+    lineTo(0f, size.height / 2f)
+    close()
+}
+
 /**
  * A connection handle placed inside custom node views.
  *
@@ -42,13 +57,16 @@ fun Handle(
     size: Dp = 12.dp,
     borderColor: Color = Color.White,
     borderWidth: Dp = 2.dp,
+    shape: Shape = CircleShape,
     isConnectable: Boolean = true,
     onDragStart: ((Offset) -> Unit)? = null,
     onDrag: ((Offset) -> Unit)? = null,
     onDragEnd: (() -> Unit)? = null
 ) {
     val flowState = LocalKotlinFlowState.current
+    val nodeCoord = LocalNodeCoordinates.current
     val key = "${nodeId}__${id}__${type.name.lowercase()}"
+    val shortKey = "${nodeId}__${id}"
 
     Box(
         modifier = modifier
@@ -69,6 +87,21 @@ fun Handle(
                     val currentTypes = flowState.handleTypes.toMutableMap()
                     currentTypes[key] = type
                     flowState.handleTypes = currentTypes
+                }
+
+                if (flowState.handlePlacements[shortKey] != position) {
+                    val currentPlacements = flowState.handlePlacements.toMutableMap()
+                    currentPlacements[shortKey] = position
+                    flowState.handlePlacements = currentPlacements
+                }
+
+                if (nodeCoord != null && nodeCoord.isAttached && coordinates.isAttached) {
+                    val localCenter = nodeCoord.localPositionOf(coordinates, Offset(coordinates.size.width / 2f, coordinates.size.height / 2f))
+                    if (flowState.handleOffsets[shortKey] != localCenter) {
+                        val currentOffsets = flowState.handleOffsets.toMutableMap()
+                        currentOffsets[shortKey] = localCenter
+                        flowState.handleOffsets = currentOffsets
+                    }
                 }
             }
             .then(
@@ -92,9 +125,9 @@ fun Handle(
                     }
                 } else Modifier
             )
-            .shadow(2.dp, CircleShape)
-            .clip(CircleShape)
+            .shadow(2.dp, shape)
+            .clip(shape)
             .background(color)
-            .border(borderWidth, borderColor, CircleShape)
+            .border(borderWidth, borderColor, shape)
     )
 }

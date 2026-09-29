@@ -47,6 +47,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
@@ -456,6 +457,7 @@ fun <NodeData, EdgeData> KotlinFlow(
                     nodes = nodes,
                     nodeSizes = nodeSizes,
                     theme = effectiveTheme,
+                    flowState = flowState,
                     onEdgeClick = onEdgeClick,
                     onEdgeDoubleClick = onEdgeDoubleClick,
                     onEdgesChange = onEdgesChange,
@@ -575,6 +577,7 @@ private fun <NodeData> FlowNodeItem(
     val currentOnNodeDoubleClick by rememberUpdatedState(onNodeDoubleClick)
 
     var dragPosition by remember { mutableStateOf(node.position) }
+    var nodeCoordinates by remember { mutableStateOf<LayoutCoordinates?>(null) }
 
     Box(
         modifier = Modifier
@@ -586,6 +589,7 @@ private fun <NodeData> FlowNodeItem(
             }
             .zIndex((if (node.selected && zIndexMode != ZIndexMode.MANUAL) node.zIndex + 1000 else node.zIndex).toFloat())
             .onGloballyPositioned { coordinates ->
+                nodeCoordinates = coordinates
                 val sz = Size(coordinates.size.width.toFloat(), coordinates.size.height.toFloat())
                 onSizeMeasured(sz)
             }
@@ -646,7 +650,11 @@ private fun <NodeData> FlowNodeItem(
                 } else Modifier
             )
     ) {
-        content(node)
+        CompositionLocalProvider(
+            LocalNodeCoordinates provides nodeCoordinates
+        ) {
+            content(node)
+        }
     }
 }
 
@@ -658,6 +666,7 @@ private fun <NodeData, EdgeData> EdgesLayer(
     nodes: List<Node<NodeData>>,
     nodeSizes: Map<String, Size>,
     theme: KotlinFlowTheme,
+    flowState: KotlinFlowState,
     onEdgeClick: ((Edge<EdgeData>) -> Unit)?,
     onEdgeDoubleClick: ((Edge<EdgeData>) -> Unit)?,
     onEdgesChange: ((List<EdgeChange<EdgeData>>) -> Unit)?,
@@ -692,21 +701,68 @@ private fun <NodeData, EdgeData> EdgesLayer(
             val sourceSize = nodeSizes[sourceNode.id] ?: Size(sourceNode.width ?: 150f, sourceNode.height ?: 50f)
             val targetSize = nodeSizes[targetNode.id] ?: Size(targetNode.width ?: 150f, targetNode.height ?: 50f)
 
-            val sourceX = sourceNode.position.x + sourceSize.width
-            val sourceY = sourceNode.position.y + sourceSize.height / 2f
-            val targetX = targetNode.position.x
-            val targetY = targetNode.position.y + targetSize.height / 2f
+            val sourceHandleKey = if (edge.sourceHandle != null) "${sourceNode.id}__${edge.sourceHandle}" else null
+            val targetHandleKey = if (edge.targetHandle != null) "${targetNode.id}__${edge.targetHandle}" else null
+
+            val sourceOffset = sourceHandleKey?.let { flowState.handleOffsets[it] }
+            val targetOffset = targetHandleKey?.let { flowState.handleOffsets[it] }
+
+            val sourcePlacement = sourceHandleKey?.let { flowState.handlePlacements[it] } ?: Position.RIGHT
+            val targetPlacement = targetHandleKey?.let { flowState.handlePlacements[it] } ?: Position.LEFT
+
+            val sourceX = if (sourceOffset != null) {
+                sourceNode.position.x + sourceOffset.x
+            } else {
+                when (sourcePlacement) {
+                    Position.LEFT -> sourceNode.position.x
+                    Position.TOP, Position.BOTTOM -> sourceNode.position.x + sourceSize.width / 2f
+                    Position.RIGHT -> sourceNode.position.x + sourceSize.width
+                }
+            }
+
+            val sourceY = if (sourceOffset != null) {
+                sourceNode.position.y + sourceOffset.y
+            } else {
+                when (sourcePlacement) {
+                    Position.TOP -> sourceNode.position.y
+                    Position.BOTTOM -> sourceNode.position.y + sourceSize.height
+                    Position.LEFT, Position.RIGHT -> sourceNode.position.y + sourceSize.height / 2f
+                }
+            }
+
+            val targetX = if (targetOffset != null) {
+                targetNode.position.x + targetOffset.x
+            } else {
+                when (targetPlacement) {
+                    Position.RIGHT -> targetNode.position.x + targetSize.width
+                    Position.TOP, Position.BOTTOM -> targetNode.position.x + targetSize.width / 2f
+                    Position.LEFT -> targetNode.position.x
+                }
+            }
+
+            val targetY = if (targetOffset != null) {
+                targetNode.position.y + targetOffset.y
+            } else {
+                when (targetPlacement) {
+                    Position.TOP -> targetNode.position.y
+                    Position.BOTTOM -> targetNode.position.y + targetSize.height
+                    Position.LEFT, Position.RIGHT -> targetNode.position.y + targetSize.height / 2f
+                }
+            }
 
             val strokeColor = edge.style?.strokeColor
                 ?: if (edge.selected) theme.edgeSelectedColor else theme.edgeColor
             val strokeW = edge.style?.strokeWidth
                 ?: if (edge.selected) theme.edgeSelectedWidth else theme.edgeWidth
 
-            val path = getEdgePath(edge.type, sourceX, sourceY, targetX, targetY)
+            val pathResult = getEdgePath(edge.type, sourceX, sourceY, sourcePlacement, targetX, targetY, targetPlacement)
+            val path = pathResult.path
 
-            val pathEffect = if (edge.animated) {
-                PathEffect.dashPathEffect(floatArrayOf(20f, 10f), dashPhase)
-            } else null
+            val pathEffect = when {
+                edge.animated -> PathEffect.dashPathEffect(floatArrayOf(20f, 10f), dashPhase)
+                edge.style?.dashed == true -> PathEffect.dashPathEffect(floatArrayOf(12f, 8f), 0f)
+                else -> null
+            }
 
             drawPath(
                 path = path,

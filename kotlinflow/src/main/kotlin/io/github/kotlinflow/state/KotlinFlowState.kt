@@ -13,6 +13,7 @@ import io.github.kotlinflow.types.AnyEdgeSnapshot
 import io.github.kotlinflow.types.AnyNodeSnapshot
 import io.github.kotlinflow.types.ConnectionState
 import io.github.kotlinflow.types.HandleType
+import io.github.kotlinflow.types.Position
 import kotlin.math.max
 import kotlin.math.min
 
@@ -35,6 +36,8 @@ class KotlinFlowState {
     var nodeSizes: Map<String, Size> by mutableStateOf(emptyMap())
     var absolutePositions: Map<String, XYPosition> by mutableStateOf(emptyMap())
     var handlePositions: Map<String, Offset> by mutableStateOf(emptyMap())
+    var handleOffsets: Map<String, Offset> by mutableStateOf(emptyMap())
+    var handlePlacements: Map<String, Position> by mutableStateOf(emptyMap())
     var handleTypes: Map<String, HandleType> by mutableStateOf(emptyMap())
 
     // MARK: - Graph Data (mirrors for overlay components)

@@ -40,7 +40,19 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Storage
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.filled.ViewCompact
+import androidx.compose.foundation.Canvas
+import androidx.compose.material.icons.filled.Code
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.SmartToy
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import io.github.kotlinflow.components.DiamondShape
+import io.github.kotlinflow.types.EdgeStyle
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -119,32 +131,27 @@ data class SampleNodeData(
     val iconType: String = "process"
 )
 
-enum class N8nNodeType(
-    val badgeLabel: String,
-    val accentColor: Color,
-    val icon: ImageVector
-) {
-    TRIGGER("TRIGGER", Color(0xFFFF5D44), Icons.Default.Bolt),
-    AI("AI AGENT", Color(0xFF8B5CF6), Icons.Default.AutoAwesome),
-    CONDITION("ROUTER", Color(0xFFF59E0B), Icons.AutoMirrored.Filled.CallSplit),
-    DATABASE("DATABASE", Color(0xFF0284C7), Icons.Default.Storage),
-    ACTION("ACTION", Color(0xFF10B981), Icons.AutoMirrored.Filled.Send)
+enum class N8nNodeKind {
+    AGENT,
+    ACTION_SQUARE,
+    ADD_BUTTON,
+    SUB_NODE_CIRCLE
 }
 
 data class N8nNodeData(
     val title: String,
-    val subtitle: String,
-    val nodeType: N8nNodeType,
-    val status: String = "Success",
-    val itemsCount: Int = 1,
-    val executionTime: String? = null
+    val subtitle: String? = null,
+    val kind: N8nNodeKind = N8nNodeKind.ACTION_SQUARE,
+    val topBadge: String? = null,
+    val iconType: String = "edit",
+    val accentColor: Color = Color(0xFF5E5CE6)
 )
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            var isDarkTheme by remember { mutableStateOf(false) }
+            var isDarkTheme by remember { mutableStateOf(true) }
 
             MaterialTheme(
                 colorScheme = if (isDarkTheme) {
@@ -278,7 +285,7 @@ fun InteractiveCanvasDemo(
     isConfigPanelOpen: Boolean = false,
     onCloseConfigPanel: () -> Unit = {}
 ) {
-    var isN8nView by rememberSaveable { mutableStateOf(false) }
+    var isN8nView by rememberSaveable { mutableStateOf(true) }
     var isCompactNodes by rememberSaveable { mutableStateOf(false) }
 
     // Standard DAG pipeline nodes (symmetrically balanced diamond layout)
@@ -350,72 +357,91 @@ fun InteractiveCanvasDemo(
         )
     }
 
-    // n8n workflow nodes and edges (clean 3-column automation layout with ruler-straight parallel paths)
+    // n8n workflow nodes and edges (authentic n8n AI agent canvas layout)
     var n8nNodes by remember {
         mutableStateOf(
             listOf(
+                // 1. Meeting Availability Agent (Main Agent wide card)
                 Node(
-                    id = "n8n-1",
-                    position = XYPosition(60f, 430f),
+                    id = "agent",
+                    position = XYPosition(100f, 200f),
                     data = N8nNodeData(
-                        title = "Webhook Trigger",
-                        subtitle = "POST /v1/incoming-lead",
-                        nodeType = N8nNodeType.TRIGGER,
-                        status = "Listening",
-                        itemsCount = 1,
-                        executionTime = "instant"
+                        title = "Meeting\nAvailability Agent",
+                        subtitle = "Tools Agent",
+                        kind = N8nNodeKind.AGENT,
+                        iconType = "robot"
                     ),
                     type = "n8n"
                 ),
+                // 2. Generate Message (Action square)
                 Node(
-                    id = "n8n-2",
-                    position = XYPosition(840f, 180f),
+                    id = "generate-msg",
+                    position = XYPosition(1150f, 215f),
                     data = N8nNodeData(
-                        title = "Gemini AI Agent",
-                        subtitle = "Extract & score intent",
-                        nodeType = N8nNodeType.AI,
-                        status = "Success",
-                        itemsCount = 1,
-                        executionTime = "180ms"
+                        title = "Generate Message",
+                        subtitle = "manual",
+                        kind = N8nNodeKind.ACTION_SQUARE,
+                        iconType = "edit",
+                        accentColor = Color(0xFF5E5CE6)
                     ),
                     type = "n8n"
                 ),
+                // 3. Send for Human Approval (Gmail action square)
                 Node(
-                    id = "n8n-3",
-                    position = XYPosition(840f, 680f),
+                    id = "human-approval",
+                    position = XYPosition(1650f, 215f),
                     data = N8nNodeData(
-                        title = "Router (IF)",
-                        subtitle = "lead_score >= 80",
-                        nodeType = N8nNodeType.CONDITION,
-                        status = "Evaluated",
-                        itemsCount = 1,
-                        executionTime = "2ms"
+                        title = "Send for Human Approval",
+                        subtitle = "sendAndWait: message",
+                        kind = N8nNodeKind.ACTION_SQUARE,
+                        iconType = "gmail"
                     ),
                     type = "n8n"
                 ),
+                // 4. [+] Add Next Step button
                 Node(
-                    id = "n8n-4",
-                    position = XYPosition(1620f, 180f),
+                    id = "add-step",
+                    position = XYPosition(2120f, 265f),
                     data = N8nNodeData(
-                        title = "PostgreSQL DB",
-                        subtitle = "Insert into crm_leads",
-                        nodeType = N8nNodeType.DATABASE,
-                        status = "Success",
-                        itemsCount = 1,
-                        executionTime = "34ms"
+                        title = "",
+                        kind = N8nNodeKind.ADD_BUTTON,
+                        iconType = "add"
                     ),
                     type = "n8n"
                 ),
+                // 5. Model (Sub-node circle, OpenAI)
                 Node(
-                    id = "n8n-5",
-                    position = XYPosition(1620f, 680f),
+                    id = "sub-model",
+                    position = XYPosition(50f, 850f),
                     data = N8nNodeData(
-                        title = "Slack Alert",
-                        subtitle = "Notify #vip-deals",
-                        nodeType = N8nNodeType.ACTION,
-                        status = "Sent",
-                        itemsCount = 1,
-                        executionTime = "92ms"
+                        title = "Model",
+                        kind = N8nNodeKind.SUB_NODE_CIRCLE,
+                        topBadge = "Model",
+                        iconType = "openai"
+                    ),
+                    type = "n8n"
+                ),
+                // 6. Availability (Sub-node circle, Google Calendar 31)
+                Node(
+                    id = "sub-calendar",
+                    position = XYPosition(450f, 850f),
+                    data = N8nNodeData(
+                        title = "Availability",
+                        subtitle = "availability: calendar",
+                        kind = N8nNodeKind.SUB_NODE_CIRCLE,
+                        iconType = "calendar"
+                    ),
+                    type = "n8n"
+                ),
+                // 7. Output (Sub-node circle, Code brackets)
+                Node(
+                    id = "sub-output",
+                    position = XYPosition(850f, 850f),
+                    data = N8nNodeData(
+                        title = "Output",
+                        kind = N8nNodeKind.SUB_NODE_CIRCLE,
+                        topBadge = "Output Parser",
+                        iconType = "code"
                     ),
                     type = "n8n"
                 )
@@ -423,40 +449,88 @@ fun InteractiveCanvasDemo(
         )
     }
 
-    var n8nEdges by remember {
+    var n8nEdges by remember(isDarkTheme) {
         mutableStateOf(
             listOf(
+                // Main Horizontal Pipeline (Solid connections with Arrow markers)
                 Edge<EmptyEdgeData>(
-                    id = "n-e1-2",
-                    source = "n8n-1",
-                    target = "n8n-2",
-                    animated = true,
-                    label = "1 item",
-                    markerEnd = EdgeMarker.ArrowClosed
+                    id = "e-agent-generate",
+                    source = "agent",
+                    sourceHandle = "out",
+                    target = "generate-msg",
+                    targetHandle = "in",
+                    type = EdgeType.BEZIER,
+                    markerEnd = EdgeMarker.ArrowClosed,
+                    style = EdgeStyle(
+                        strokeColor = if (isDarkTheme) Color(0xFFD4D4D8) else Color(0xFF475569),
+                        strokeWidth = 2.2f
+                    )
                 ),
                 Edge<EmptyEdgeData>(
-                    id = "n-e1-3",
-                    source = "n8n-1",
-                    target = "n8n-3",
-                    animated = true,
-                    label = "1 item",
-                    markerEnd = EdgeMarker.ArrowClosed
+                    id = "e-generate-approval",
+                    source = "generate-msg",
+                    sourceHandle = "out",
+                    target = "human-approval",
+                    targetHandle = "in",
+                    type = EdgeType.BEZIER,
+                    markerEnd = EdgeMarker.ArrowClosed,
+                    style = EdgeStyle(
+                        strokeColor = if (isDarkTheme) Color(0xFFD4D4D8) else Color(0xFF475569),
+                        strokeWidth = 2.2f
+                    )
                 ),
                 Edge<EmptyEdgeData>(
-                    id = "n-e2-4",
-                    source = "n8n-2",
-                    target = "n8n-4",
-                    animated = true,
-                    label = "score: 95",
-                    markerEnd = EdgeMarker.ArrowClosed
+                    id = "e-approval-add",
+                    source = "human-approval",
+                    sourceHandle = "out",
+                    target = "add-step",
+                    targetHandle = "in",
+                    type = EdgeType.BEZIER,
+                    markerEnd = EdgeMarker.ArrowClosed,
+                    style = EdgeStyle(
+                        strokeColor = if (isDarkTheme) Color(0xFFD4D4D8) else Color(0xFF475569),
+                        strokeWidth = 2.2f
+                    )
+                ),
+                // Sub-Nodes Connections (Dashed bezier curves from Agent bottom ports)
+                Edge<EmptyEdgeData>(
+                    id = "e-agent-model",
+                    source = "agent",
+                    sourceHandle = "agent-chat-model",
+                    target = "sub-model",
+                    targetHandle = "top",
+                    type = EdgeType.BEZIER,
+                    style = EdgeStyle(
+                        strokeColor = if (isDarkTheme) Color(0xFFA1A1AA) else Color(0xFF64748B),
+                        strokeWidth = 1.8f,
+                        dashed = true
+                    )
                 ),
                 Edge<EmptyEdgeData>(
-                    id = "n-e3-5",
-                    source = "n8n-3",
-                    target = "n8n-5",
-                    animated = true,
-                    label = "true (qualified)",
-                    markerEnd = EdgeMarker.ArrowClosed
+                    id = "e-agent-calendar",
+                    source = "agent",
+                    sourceHandle = "agent-tool",
+                    target = "sub-calendar",
+                    targetHandle = "top",
+                    type = EdgeType.BEZIER,
+                    style = EdgeStyle(
+                        strokeColor = if (isDarkTheme) Color(0xFFA1A1AA) else Color(0xFF64748B),
+                        strokeWidth = 1.8f,
+                        dashed = true
+                    )
+                ),
+                Edge<EmptyEdgeData>(
+                    id = "e-agent-output",
+                    source = "agent",
+                    sourceHandle = "agent-output-parser",
+                    target = "sub-output",
+                    targetHandle = "top",
+                    type = EdgeType.BEZIER,
+                    style = EdgeStyle(
+                        strokeColor = if (isDarkTheme) Color(0xFFA1A1AA) else Color(0xFF64748B),
+                        strokeWidth = 1.8f,
+                        dashed = true
+                    )
                 )
             )
         )
@@ -721,16 +795,113 @@ fun InteractiveCanvasDemo(
 }
 
 @Composable
+fun GmailIcon(modifier: Modifier = Modifier) {
+    Canvas(modifier = modifier.size(34.dp)) {
+        val w = size.width
+        val h = size.height
+        val s = w * 0.16f
+
+        // Blue left column
+        drawLine(
+            color = Color(0xFF4285F4),
+            start = Offset(s / 2, h * 0.22f),
+            end = Offset(s / 2, h - s / 2),
+            strokeWidth = s,
+            cap = StrokeCap.Round
+        )
+        // Green right column
+        drawLine(
+            color = Color(0xFF34A853),
+            start = Offset(w - s / 2, h * 0.22f),
+            end = Offset(w - s / 2, h - s / 2),
+            strokeWidth = s,
+            cap = StrokeCap.Round
+        )
+        // Red left diagonal & top corner
+        val redPath = Path().apply {
+            moveTo(s / 2, h * 0.22f)
+            lineTo(w * 0.5f, h * 0.60f)
+        }
+        drawPath(
+            path = redPath,
+            color = Color(0xFFEA4335),
+            style = Stroke(width = s, cap = StrokeCap.Round, join = StrokeJoin.Round)
+        )
+        // Yellow right diagonal
+        val yellowPath = Path().apply {
+            moveTo(w * 0.5f, h * 0.60f)
+            lineTo(w - s / 2, h * 0.22f)
+        }
+        drawPath(
+            path = yellowPath,
+            color = Color(0xFFFBBC05),
+            style = Stroke(width = s, cap = StrokeCap.Round, join = StrokeJoin.Round)
+        )
+    }
+}
+
+@Composable
+fun GoogleCalendarIcon(modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier
+            .size(34.dp)
+            .clip(RoundedCornerShape(8.dp))
+            .background(Color.White)
+            .border(1.5.dp, Color(0xFF4285F4), RoundedCornerShape(8.dp))
+    ) {
+        Column(modifier = Modifier.fillMaxSize()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(9.dp)
+                    .background(Color(0xFFEA4335))
+            )
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "31",
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF1E293B)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun OpenAIIcon(modifier: Modifier = Modifier) {
+    Canvas(modifier = modifier.size(30.dp)) {
+        val r = size.minDimension / 2f
+        val c = center
+        for (i in 0 until 6) {
+            val angle = (i * 60f) * (Math.PI / 180f).toFloat()
+            val ox = c.x + (r * 0.42f) * kotlin.math.cos(angle)
+            val oy = c.y + (r * 0.42f) * kotlin.math.sin(angle)
+            drawCircle(
+                color = Color.White.copy(alpha = 0.85f),
+                radius = r * 0.40f,
+                center = Offset(ox, oy),
+                style = Stroke(width = 1.8.dp.toPx())
+            )
+        }
+    }
+}
+
+@Composable
 fun N8nNodeCard(
     node: Node<N8nNodeData>,
     isDarkTheme: Boolean = false,
     isCompact: Boolean = false
 ) {
     val data = node.data
-    val cardBg = if (isDarkTheme) Color(0xFF1E222D) else Color.White
-    val cardBorder = if (isDarkTheme) Color(0xFF333B4F) else Color(0xFFE2E8F0)
+    val cardBg = if (isDarkTheme) Color(0xFF26262B) else Color.White
+    val cardBorder = if (isDarkTheme) Color(0xFF4B4B55) else Color(0xFFCBD5E1)
+    val handleColor = if (isDarkTheme) Color(0xFFD4D4D8) else Color(0xFF475569)
     val titleColor = if (isDarkTheme) Color.White else Color(0xFF0F172A)
-    val subtitleColor = if (isDarkTheme) Color(0xFF94A3B8) else Color(0xFF64748B)
+    val subtitleColor = if (isDarkTheme) Color(0xFFA1A1AA) else Color(0xFF64748B)
 
     if (isCompact) {
         // High-density compact n8n pill node
@@ -754,23 +925,19 @@ fun N8nNodeCard(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .size(24.dp)
-                            .clip(RoundedCornerShape(5.dp))
-                            .background(data.nodeType.accentColor.copy(alpha = if (isDarkTheme) 0.3f else 0.18f)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = data.nodeType.icon,
-                            contentDescription = null,
-                            tint = data.nodeType.accentColor,
-                            modifier = Modifier.size(14.dp)
-                        )
+                    when (data.iconType) {
+                        "robot" -> Icon(Icons.Default.SmartToy, null, tint = titleColor, modifier = Modifier.size(16.dp))
+                        "edit" -> Icon(Icons.Default.Edit, null, tint = Color(0xFF5E5CE6), modifier = Modifier.size(16.dp))
+                        "gmail" -> GmailIcon(modifier = Modifier.size(16.dp))
+                        "openai" -> Icon(Icons.Default.AutoAwesome, null, tint = titleColor, modifier = Modifier.size(16.dp))
+                        "calendar" -> GoogleCalendarIcon(modifier = Modifier.size(16.dp))
+                        "code" -> Text("</>", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = titleColor)
+                        "add" -> Icon(Icons.Default.Add, null, tint = titleColor, modifier = Modifier.size(16.dp))
+                        else -> Icon(Icons.Default.Bolt, null, tint = titleColor, modifier = Modifier.size(16.dp))
                     }
 
                     Text(
-                        text = data.title,
+                        text = data.title.replace("\n", " "),
                         fontWeight = FontWeight.Bold,
                         fontSize = 11.sp,
                         color = titleColor,
@@ -778,24 +945,31 @@ fun N8nNodeCard(
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.weight(1f)
                     )
-
-                    // Mini status dot
-                    Box(
-                        modifier = Modifier
-                            .size(6.dp)
-                            .background(Color(0xFF10B981), CircleShape)
-                    )
                 }
             }
 
-            // Target handle (in) on the left border - only for non-triggers
-            if (data.nodeType != N8nNodeType.TRIGGER) {
+            // Input handle if applicable
+            if (data.kind != N8nNodeKind.AGENT && data.kind != N8nNodeKind.ADD_BUTTON) {
+                Handle(
+                    nodeId = node.id,
+                    id = if (data.kind == N8nNodeKind.SUB_NODE_CIRCLE) "top" else "in",
+                    type = HandleType.TARGET,
+                    position = if (data.kind == N8nNodeKind.SUB_NODE_CIRCLE) Position.TOP else Position.LEFT,
+                    color = handleColor,
+                    size = 10.dp,
+                    borderColor = cardBg,
+                    borderWidth = 2.dp,
+                    modifier = Modifier
+                        .align(Alignment.CenterStart)
+                        .offset(x = (-5).dp)
+                )
+            } else if (data.kind == N8nNodeKind.ADD_BUTTON) {
                 Handle(
                     nodeId = node.id,
                     id = "in",
                     type = HandleType.TARGET,
                     position = Position.LEFT,
-                    color = data.nodeType.accentColor,
+                    color = handleColor,
                     size = 10.dp,
                     borderColor = cardBg,
                     borderWidth = 2.dp,
@@ -805,179 +979,500 @@ fun N8nNodeCard(
                 )
             }
 
-            // Source handle (out) on the right border
-            Handle(
-                nodeId = node.id,
-                id = "out",
-                type = HandleType.SOURCE,
-                position = Position.RIGHT,
-                color = data.nodeType.accentColor,
-                size = 10.dp,
-                borderColor = cardBg,
-                borderWidth = 2.dp,
-                modifier = Modifier
-                    .align(Alignment.CenterEnd)
-                    .offset(x = 5.dp)
-            )
+            // Output handle
+            if (data.kind != N8nNodeKind.ADD_BUTTON && data.kind != N8nNodeKind.SUB_NODE_CIRCLE) {
+                Handle(
+                    nodeId = node.id,
+                    id = "out",
+                    type = HandleType.SOURCE,
+                    position = Position.RIGHT,
+                    color = handleColor,
+                    size = 10.dp,
+                    borderColor = cardBg,
+                    borderWidth = 2.dp,
+                    modifier = Modifier
+                        .align(Alignment.CenterEnd)
+                        .offset(x = 5.dp)
+                )
+            }
         }
     } else {
-        // Detailed n8n card
-        Box(
-            modifier = Modifier.width(230.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .shadow(6.dp, RoundedCornerShape(12.dp))
-                    .border(1.dp, cardBorder, RoundedCornerShape(12.dp)),
-                shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = cardBg)
-            ) {
-                Column(modifier = Modifier.padding(12.dp)) {
-                    // Top section: Icon + Labels
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+        // Detailed authentic n8n replica view
+        when (data.kind) {
+            N8nNodeKind.AGENT -> {
+                // Wide Agent card with 4 bottom diamond ports
+                Box(
+                    modifier = Modifier.width(280.dp),
+                    contentAlignment = Alignment.TopCenter
+                ) {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        // Node Type Icon Box (n8n signature colored square with rounded corners)
-                        Box(
+                        Card(
                             modifier = Modifier
-                                .size(38.dp)
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(data.nodeType.accentColor.copy(alpha = if (isDarkTheme) 0.25f else 0.15f))
-                                .border(1.dp, data.nodeType.accentColor.copy(alpha = 0.4f), RoundedCornerShape(8.dp)),
-                            contentAlignment = Alignment.Center
+                                .fillMaxWidth()
+                                .height(82.dp)
+                                .shadow(6.dp, RoundedCornerShape(12.dp))
+                                .border(1.dp, cardBorder, RoundedCornerShape(12.dp)),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = CardDefaults.cardColors(containerColor = cardBg)
                         ) {
-                            Icon(
-                                imageVector = data.nodeType.icon,
-                                contentDescription = null,
-                                tint = data.nodeType.accentColor,
-                                modifier = Modifier.size(20.dp)
-                            )
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(horizontal = 14.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(14.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.SmartToy,
+                                    contentDescription = null,
+                                    tint = titleColor,
+                                    modifier = Modifier.size(34.dp)
+                                )
+                                Column {
+                                    Text(
+                                        text = "Meeting\nAvailability Agent",
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 13.sp,
+                                        lineHeight = 16.sp,
+                                        color = titleColor
+                                    )
+                                    Spacer(modifier = Modifier.height(3.dp))
+                                    Text(
+                                        text = "Tools Agent",
+                                        fontSize = 11.sp,
+                                        color = subtitleColor
+                                    )
+                                }
+                            }
                         }
 
-                        Column(modifier = Modifier.weight(1f)) {
-                            // Category Tag
-                            Box(
-                                modifier = Modifier
-                                    .background(
-                                        data.nodeType.accentColor.copy(alpha = 0.2f),
-                                        RoundedCornerShape(4.dp)
-                                    )
-                                    .padding(horizontal = 4.dp, vertical = 1.dp)
-                            ) {
-                                Text(
-                                    text = data.nodeType.badgeLabel,
-                                    fontSize = 8.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = data.nodeType.accentColor
+                        // Bottom diamond ports bar
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .offset(y = (-5.5).dp)
+                                .padding(horizontal = 6.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.Top
+                        ) {
+                            // 1. Chat Model
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Handle(
+                                    nodeId = node.id,
+                                    id = "agent-chat-model",
+                                    type = HandleType.SOURCE,
+                                    position = Position.BOTTOM,
+                                    shape = DiamondShape,
+                                    color = handleColor,
+                                    size = 11.dp,
+                                    borderColor = cardBg,
+                                    borderWidth = 1.5.dp
                                 )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Box(
+                                    modifier = Modifier
+                                        .background(if (isDarkTheme) Color(0xFF1E1E24) else Color(0xFFF1F5F9), RoundedCornerShape(4.dp))
+                                        .border(0.5.dp, cardBorder, RoundedCornerShape(4.dp))
+                                        .padding(horizontal = 4.dp, vertical = 1.dp)
+                                ) {
+                                    Text(
+                                        text = "Chat Model",
+                                        fontSize = 8.sp,
+                                        color = subtitleColor
+                                    )
+                                }
                             }
-                            Spacer(modifier = Modifier.height(2.dp))
-                            Text(
-                                text = data.title,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 13.sp,
-                                color = titleColor,
-                                maxLines = 1
-                            )
-                            Text(
-                                text = data.subtitle,
-                                fontSize = 11.sp,
-                                color = subtitleColor,
-                                maxLines = 1
-                            )
+
+                            // 2. Memory
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Handle(
+                                    nodeId = node.id,
+                                    id = "agent-memory",
+                                    type = HandleType.SOURCE,
+                                    position = Position.BOTTOM,
+                                    shape = DiamondShape,
+                                    color = handleColor,
+                                    size = 11.dp,
+                                    borderColor = cardBg,
+                                    borderWidth = 1.5.dp
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Box(
+                                    modifier = Modifier
+                                        .background(if (isDarkTheme) Color(0xFF1E1E24) else Color(0xFFF1F5F9), RoundedCornerShape(4.dp))
+                                        .border(0.5.dp, cardBorder, RoundedCornerShape(4.dp))
+                                        .padding(horizontal = 4.dp, vertical = 1.dp)
+                                ) {
+                                    Text(
+                                        text = "Memory",
+                                        fontSize = 8.sp,
+                                        color = subtitleColor
+                                    )
+                                }
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Box(
+                                    modifier = Modifier
+                                        .size(16.dp)
+                                        .background(if (isDarkTheme) Color(0xFF26262B) else Color.White, RoundedCornerShape(3.dp))
+                                        .border(0.5.dp, cardBorder, RoundedCornerShape(3.dp)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Add,
+                                        contentDescription = null,
+                                        tint = titleColor,
+                                        modifier = Modifier.size(10.dp)
+                                    )
+                                }
+                            }
+
+                            // 3. Tool
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Handle(
+                                    nodeId = node.id,
+                                    id = "agent-tool",
+                                    type = HandleType.SOURCE,
+                                    position = Position.BOTTOM,
+                                    shape = DiamondShape,
+                                    color = handleColor,
+                                    size = 11.dp,
+                                    borderColor = cardBg,
+                                    borderWidth = 1.5.dp
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Box(
+                                    modifier = Modifier
+                                        .background(if (isDarkTheme) Color(0xFF1E1E24) else Color(0xFFF1F5F9), RoundedCornerShape(4.dp))
+                                        .border(0.5.dp, cardBorder, RoundedCornerShape(4.dp))
+                                        .padding(horizontal = 4.dp, vertical = 1.dp)
+                                ) {
+                                    Text(
+                                        text = "Tool",
+                                        fontSize = 8.sp,
+                                        color = subtitleColor
+                                    )
+                                }
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Box(
+                                    modifier = Modifier
+                                        .size(16.dp)
+                                        .background(if (isDarkTheme) Color(0xFF26262B) else Color.White, RoundedCornerShape(3.dp))
+                                        .border(0.5.dp, cardBorder, RoundedCornerShape(3.dp)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Add,
+                                        contentDescription = null,
+                                        tint = titleColor,
+                                        modifier = Modifier.size(10.dp)
+                                    )
+                                }
+                            }
+
+                            // 4. Output Parser
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Handle(
+                                    nodeId = node.id,
+                                    id = "agent-output-parser",
+                                    type = HandleType.SOURCE,
+                                    position = Position.BOTTOM,
+                                    shape = DiamondShape,
+                                    color = handleColor,
+                                    size = 11.dp,
+                                    borderColor = cardBg,
+                                    borderWidth = 1.5.dp
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Box(
+                                    modifier = Modifier
+                                        .background(if (isDarkTheme) Color(0xFF1E1E24) else Color(0xFFF1F5F9), RoundedCornerShape(4.dp))
+                                        .border(0.5.dp, cardBorder, RoundedCornerShape(4.dp))
+                                        .padding(horizontal = 4.dp, vertical = 1.dp)
+                                ) {
+                                    Text(
+                                        text = "Output Parser",
+                                        fontSize = 8.sp,
+                                        color = subtitleColor
+                                    )
+                                }
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Box(
+                                    modifier = Modifier
+                                        .size(16.dp)
+                                        .background(if (isDarkTheme) Color(0xFF26262B) else Color.White, RoundedCornerShape(3.dp))
+                                        .border(0.5.dp, cardBorder, RoundedCornerShape(3.dp)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Add,
+                                        contentDescription = null,
+                                        tint = titleColor,
+                                        modifier = Modifier.size(10.dp)
+                                    )
+                                }
+                            }
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(10.dp))
-
-                    // Divider line
-                    Box(
+                    // Left Circle Handle
+                    Handle(
+                        nodeId = node.id,
+                        id = "in",
+                        type = HandleType.TARGET,
+                        position = Position.LEFT,
+                        color = handleColor,
+                        size = 12.dp,
+                        borderColor = cardBg,
+                        borderWidth = 2.dp,
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .height(0.5.dp)
-                            .background(if (isDarkTheme) Color(0xFF2A2E3D) else Color(0xFFF1F5F9))
+                            .align(Alignment.TopStart)
+                            .offset(x = (-6).dp, y = 35.dp)
                     )
+
+                    // Right Circle Handle
+                    Handle(
+                        nodeId = node.id,
+                        id = "out",
+                        type = HandleType.SOURCE,
+                        position = Position.RIGHT,
+                        color = handleColor,
+                        size = 12.dp,
+                        borderColor = cardBg,
+                        borderWidth = 2.dp,
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .offset(x = 6.dp, y = 35.dp)
+                    )
+                }
+            }
+
+            N8nNodeKind.ACTION_SQUARE -> {
+                // Square 72x72dp card with icon inside and labels below
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.width(130.dp)
+                ) {
+                    Box(
+                        modifier = Modifier.size(72.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Card(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .shadow(6.dp, RoundedCornerShape(12.dp))
+                                .border(1.dp, cardBorder, RoundedCornerShape(12.dp)),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = CardDefaults.cardColors(containerColor = cardBg)
+                        ) {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                if (data.iconType == "edit") {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(46.dp)
+                                            .clip(RoundedCornerShape(12.dp))
+                                            .background(Color(0xFF5E5CE6)),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Edit,
+                                            contentDescription = null,
+                                            tint = Color.White,
+                                            modifier = Modifier.size(24.dp)
+                                        )
+                                    }
+                                } else if (data.iconType == "gmail") {
+                                    GmailIcon(modifier = Modifier.size(34.dp))
+                                }
+                            }
+                        }
+
+                        // Left Circle Handle
+                        Handle(
+                            nodeId = node.id,
+                            id = "in",
+                            type = HandleType.TARGET,
+                            position = Position.LEFT,
+                            color = handleColor,
+                            size = 12.dp,
+                            borderColor = cardBg,
+                            borderWidth = 2.dp,
+                            modifier = Modifier
+                                .align(Alignment.CenterStart)
+                                .offset(x = (-6).dp)
+                        )
+
+                        // Right Circle Handle
+                        Handle(
+                            nodeId = node.id,
+                            id = "out",
+                            type = HandleType.SOURCE,
+                            position = Position.RIGHT,
+                            color = handleColor,
+                            size = 12.dp,
+                            borderColor = cardBg,
+                            borderWidth = 2.dp,
+                            modifier = Modifier
+                                .align(Alignment.CenterEnd)
+                                .offset(x = 6.dp)
+                        )
+                    }
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    // Bottom Status Bar: Success checkmark + Items pill
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(4.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.CheckCircle,
-                                contentDescription = null,
-                                tint = Color(0xFF10B981),
-                                modifier = Modifier.size(12.dp)
-                            )
-                            Text(
-                                text = if (data.executionTime != null) "${data.status} • ${data.executionTime}" else data.status,
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.Medium,
-                                color = Color(0xFF10B981)
-                            )
-                        }
-
-                        // Output items count badge (e.g., "1 item", "5 items")
-                        Box(
-                            modifier = Modifier
-                                .background(
-                                    if (isDarkTheme) Color(0xFF064E3B).copy(alpha = 0.6f) else Color(0xFFD1FAE5),
-                                    RoundedCornerShape(4.dp)
-                                )
-                                .padding(horizontal = 6.dp, vertical = 2.dp)
-                        ) {
-                            Text(
-                                text = "${data.itemsCount} item",
-                                fontSize = 9.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = if (isDarkTheme) Color(0xFF6EE7B7) else Color(0xFF047857)
-                            )
-                        }
+                    Text(
+                        text = data.title,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 12.sp,
+                        color = titleColor,
+                        textAlign = TextAlign.Center
+                    )
+                    if (data.subtitle != null) {
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = data.subtitle,
+                            fontSize = 10.sp,
+                            color = subtitleColor,
+                            textAlign = TextAlign.Center
+                        )
                     }
                 }
             }
 
-            // Target handle (in) on the left border - only for non-triggers
-            if (data.nodeType != N8nNodeType.TRIGGER) {
-                Handle(
-                    nodeId = node.id,
-                    id = "in",
-                    type = HandleType.TARGET,
-                    position = Position.LEFT,
-                    color = data.nodeType.accentColor,
-                    size = 12.dp,
-                    borderColor = cardBg,
-                    borderWidth = 2.dp,
-                    modifier = Modifier
-                        .align(Alignment.CenterStart)
-                        .offset(x = (-6).dp)
-                )
+            N8nNodeKind.ADD_BUTTON -> {
+                // Mini 34x34dp [+] button
+                Box(
+                    modifier = Modifier.size(34.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .shadow(3.dp, RoundedCornerShape(8.dp))
+                            .border(1.dp, cardBorder, RoundedCornerShape(8.dp)),
+                        shape = RoundedCornerShape(8.dp),
+                        colors = CardDefaults.cardColors(containerColor = cardBg)
+                    ) {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Add,
+                                contentDescription = null,
+                                tint = titleColor,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+                    }
+
+                    // Left Circle Handle
+                    Handle(
+                        nodeId = node.id,
+                        id = "in",
+                        type = HandleType.TARGET,
+                        position = Position.LEFT,
+                        color = handleColor,
+                        size = 10.dp,
+                        borderColor = cardBg,
+                        borderWidth = 2.dp,
+                        modifier = Modifier
+                            .align(Alignment.CenterStart)
+                            .offset(x = (-5).dp)
+                    )
+                }
             }
 
-            // Source handle (out) on the right border
-            Handle(
-                nodeId = node.id,
-                id = "out",
-                type = HandleType.SOURCE,
-                position = Position.RIGHT,
-                color = data.nodeType.accentColor,
-                size = 12.dp,
-                borderColor = cardBg,
-                borderWidth = 2.dp,
-                modifier = Modifier
-                    .align(Alignment.CenterEnd)
-                    .offset(x = 6.dp)
-            )
+            N8nNodeKind.SUB_NODE_CIRCLE -> {
+                // Circular node with top diamond port
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.width(110.dp)
+                ) {
+                    if (data.topBadge != null) {
+                        Box(
+                            modifier = Modifier
+                                .background(if (isDarkTheme) Color(0xFF1E1E24) else Color(0xFFF1F5F9), RoundedCornerShape(4.dp))
+                                .border(0.5.dp, cardBorder, RoundedCornerShape(4.dp))
+                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                        ) {
+                            Text(
+                                text = data.topBadge,
+                                fontSize = 8.5.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = subtitleColor
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(4.dp))
+                    }
+
+                    Box(
+                        modifier = Modifier.size(66.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Card(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .shadow(6.dp, CircleShape)
+                                .border(1.5.dp, cardBorder, CircleShape),
+                            shape = CircleShape,
+                            colors = CardDefaults.cardColors(containerColor = cardBg)
+                        ) {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                when (data.iconType) {
+                                    "openai" -> OpenAIIcon()
+                                    "calendar" -> GoogleCalendarIcon()
+                                    "code" -> Text("</>", fontSize = 18.sp, fontWeight = FontWeight.ExtraBold, color = titleColor)
+                                    else -> Icon(Icons.Default.AutoAwesome, null, tint = titleColor, modifier = Modifier.size(24.dp))
+                                }
+                            }
+                        }
+
+                        // Top Diamond Handle
+                        Handle(
+                            nodeId = node.id,
+                            id = "top",
+                            type = HandleType.TARGET,
+                            position = Position.TOP,
+                            shape = DiamondShape,
+                            color = handleColor,
+                            size = 11.dp,
+                            borderColor = cardBg,
+                            borderWidth = 1.5.dp,
+                            modifier = Modifier
+                                .align(Alignment.TopCenter)
+                                .offset(y = (-5.5).dp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(6.dp))
+
+                    Text(
+                        text = data.title,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 12.sp,
+                        color = titleColor,
+                        textAlign = TextAlign.Center
+                    )
+                    if (data.subtitle != null) {
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = data.subtitle,
+                            fontSize = 10.sp,
+                            color = subtitleColor,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+            }
         }
     }
 }
