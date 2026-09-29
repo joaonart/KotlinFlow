@@ -10,6 +10,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectTransformGestures
@@ -286,7 +287,21 @@ fun <NodeData, EdgeData> KotlinFlow(
     overlay: @Composable () -> Unit = {},
     nodeContent: @Composable (Node<NodeData>) -> Unit
 ) {
+    val isSystemDark = isSystemInDarkTheme()
+    val effectiveTheme = remember(theme, colorMode, isSystemDark) {
+        if (theme != KotlinFlowTheme.Default) {
+            theme
+        } else {
+            when (colorMode) {
+                ColorMode.LIGHT -> KotlinFlowTheme.Light
+                ColorMode.DARK -> KotlinFlowTheme.Dark
+                ColorMode.SYSTEM -> if (isSystemDark) KotlinFlowTheme.Dark else KotlinFlowTheme.Light
+            }
+        }
+    }
+
     val flowState = remember { KotlinFlowState() }
+    flowState.theme = effectiveTheme
     val scope = rememberCoroutineScope()
 
     // Viewport state
@@ -374,7 +389,7 @@ fun <NodeData, EdgeData> KotlinFlow(
             modifier = modifier
                 .fillMaxSize()
                 .clipToBounds()
-                .background(theme.canvasBackgroundColor)
+                .background(effectiveTheme.canvasBackgroundColor)
                 .onGloballyPositioned { coordinates ->
                     viewSize = Size(coordinates.size.width.toFloat(), coordinates.size.height.toFloat())
                 }
@@ -416,8 +431,8 @@ fun <NodeData, EdgeData> KotlinFlow(
             if (backgroundVariant != null) {
                 Background(
                     variant = backgroundVariant,
-                    color = theme.gridColor,
-                    gap = theme.gridSpacing
+                    color = effectiveTheme.gridColor,
+                    gap = effectiveTheme.gridSpacing
                 )
             }
 
@@ -437,7 +452,7 @@ fun <NodeData, EdgeData> KotlinFlow(
                     edges = edges,
                     nodes = nodes,
                     nodeSizes = nodeSizes,
-                    theme = theme,
+                    theme = effectiveTheme,
                     onEdgeClick = onEdgeClick,
                     onEdgeDoubleClick = onEdgeDoubleClick,
                     onEdgesChange = onEdgesChange,
@@ -450,7 +465,7 @@ fun <NodeData, EdgeData> KotlinFlow(
                         start = draftingStart!!,
                         current = draftingCurrent!!,
                         type = connectionLineType,
-                        theme = theme
+                        theme = effectiveTheme
                     )
                 }
 
@@ -473,7 +488,7 @@ fun <NodeData, EdgeData> KotlinFlow(
                             snapToGrid = snapToGrid,
                             snapGrid = snapGrid,
                             coordinateExtent = coordinateExtent,
-                            theme = theme,
+                            theme = effectiveTheme,
                             onNodeDragStart = onNodeDragStart,
                             onNodeDrag = onNodeDrag,
                             onNodeDragStop = onNodeDragStop,
@@ -509,8 +524,8 @@ fun <NodeData, EdgeData> KotlinFlow(
                     modifier = Modifier
                         .offset { IntOffset(left.roundToInt(), top.roundToInt()) }
                         .size(boxWidth, boxHeight)
-                        .background(theme.selectionBoxColor)
-                        .border(1.dp, theme.selectionBoxBorderColor)
+                        .background(effectiveTheme.selectionBoxColor)
+                        .border(1.dp, effectiveTheme.selectionBoxBorderColor)
                 )
             }
 

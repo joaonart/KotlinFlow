@@ -22,6 +22,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import io.github.kotlinflow.models.KotlinFlowTheme
 import io.github.kotlinflow.models.Viewport
 import io.github.kotlinflow.state.LocalKotlinFlowState
 import io.github.kotlinflow.types.PanelPosition
@@ -74,13 +75,17 @@ fun MiniMap(
             .padding(12.dp),
         contentAlignment = position.alignment
     ) {
+        val isDark = flowState.theme == KotlinFlowTheme.Dark
+        val containerBg = if (isDark) Color(0xFF252525).copy(alpha = 0.95f) else Color.White.copy(alpha = 0.92f)
+        val borderColor = if (isDark) Color.White.copy(alpha = 0.15f) else Color.Gray.copy(alpha = 0.2f)
+
         Box(
             modifier = Modifier
                 .size(width, height)
                 .shadow(4.dp, RoundedCornerShape(8.dp))
                 .clip(RoundedCornerShape(8.dp))
-                .background(Color.White.copy(alpha = 0.92f))
-                .border(1.dp, Color.Gray.copy(alpha = 0.2f), RoundedCornerShape(8.dp))
+                .background(containerBg)
+                .border(1.dp, borderColor, RoundedCornerShape(8.dp))
         ) {
             Canvas(
                 modifier = Modifier

@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import io.github.kotlinflow.models.Connection
+import io.github.kotlinflow.models.KotlinFlowTheme
 import io.github.kotlinflow.models.Viewport
 import io.github.kotlinflow.models.XYPosition
 import io.github.kotlinflow.types.AnyEdgeSnapshot
@@ -48,6 +49,9 @@ class KotlinFlowState {
 
     // MARK: - Interactivity
     var isInteractive: Boolean by mutableStateOf(true)
+
+    // MARK: - Theme
+    var theme: KotlinFlowTheme by mutableStateOf(KotlinFlowTheme.Default)
 
     // MARK: - Viewport Mutation
     internal var internalApplyViewport: ((Viewport, Boolean) -> Unit)? = null

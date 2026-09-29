@@ -29,14 +29,15 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import io.github.kotlinflow.models.KotlinFlowTheme
 import io.github.kotlinflow.state.LocalKotlinFlowState
 import io.github.kotlinflow.types.PanelPosition
 import kotlin.math.roundToInt
 
 /**
- * Zoom and fit-to-view control buttons for the KotlinFlow canvas.
+ * A floating panel containing zoom, fit-to-view, and lock controls.
  *
- * Reads viewport state from the environment and applies changes through
+ * Controls automatically binds to viewport manipulation methods on
  * the shared [KotlinFlowState]. Place inside the overlay Composable of [KotlinFlow].
  */
 @Composable
@@ -49,6 +50,11 @@ fun Controls(
     children: @Composable () -> Unit = {}
 ) {
     val flowState = LocalKotlinFlowState.current
+    val isDark = flowState.theme == KotlinFlowTheme.Dark
+    val containerBg = if (isDark) Color(0xFF2C2C2C).copy(alpha = 0.95f) else Color.White.copy(alpha = 0.95f)
+    val borderColor = if (isDark) Color.White.copy(alpha = 0.15f) else Color.Gray.copy(alpha = 0.2f)
+    val contentColor = if (isDark) Color(0xFFE0E0E0) else Color.DarkGray
+    val dividerColor = if (isDark) Color.White.copy(alpha = 0.12f) else Color.LightGray.copy(alpha = 0.4f)
 
     Box(
         modifier = modifier
@@ -60,8 +66,8 @@ fun Controls(
             modifier = Modifier
                 .shadow(4.dp, RoundedCornerShape(8.dp))
                 .clip(RoundedCornerShape(8.dp))
-                .background(Color.White.copy(alpha = 0.95f))
-                .border(1.dp, Color.Gray.copy(alpha = 0.2f), RoundedCornerShape(8.dp))
+                .background(containerBg)
+                .border(1.dp, borderColor, RoundedCornerShape(8.dp))
                 .width(36.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -71,10 +77,10 @@ fun Controls(
                         imageVector = Icons.Default.Add,
                         contentDescription = "Zoom in",
                         modifier = Modifier.padding(6.dp),
-                        tint = Color.DarkGray
+                        tint = contentColor
                     )
                 }
-                HorizontalDivider(color = Color.LightGray.copy(alpha = 0.4f))
+                HorizontalDivider(color = dividerColor)
                 Box(
                     modifier = Modifier
                         .height(24.dp)
@@ -88,44 +94,44 @@ fun Controls(
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Medium,
                         fontFamily = FontFamily.Monospace,
-                        color = Color.DarkGray
+                        color = contentColor
                     )
                 }
-                HorizontalDivider(color = Color.LightGray.copy(alpha = 0.4f))
+                HorizontalDivider(color = dividerColor)
                 ControlButton(onClick = { flowState.zoomOut() }) {
                     Icon(
                         imageVector = Icons.Default.Remove,
                         contentDescription = "Zoom out",
                         modifier = Modifier.padding(6.dp),
-                        tint = Color.DarkGray
+                        tint = contentColor
                     )
                 }
             }
 
             if (showFitView) {
                 if (showZoom) {
-                    HorizontalDivider(color = Color.LightGray.copy(alpha = 0.4f))
+                    HorizontalDivider(color = dividerColor)
                 }
                 ControlButton(onClick = { flowState.fitView() }) {
                     Icon(
                         imageVector = Icons.Default.CropFree,
                         contentDescription = "Fit all nodes",
                         modifier = Modifier.padding(6.dp),
-                        tint = Color.DarkGray
+                        tint = contentColor
                     )
                 }
             }
 
             if (showInteractive) {
                 if (showZoom || showFitView) {
-                    HorizontalDivider(color = Color.LightGray.copy(alpha = 0.4f))
+                    HorizontalDivider(color = dividerColor)
                 }
                 ControlButton(onClick = { flowState.isInteractive = !flowState.isInteractive }) {
                     Icon(
                         imageVector = if (flowState.isInteractive) Icons.Default.LockOpen else Icons.Default.Lock,
                         contentDescription = if (flowState.isInteractive) "Disable interactions" else "Enable interactions",
                         modifier = Modifier.padding(6.dp),
-                        tint = Color.DarkGray
+                        tint = contentColor
                     )
                 }
             }

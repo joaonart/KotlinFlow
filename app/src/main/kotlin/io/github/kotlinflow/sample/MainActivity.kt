@@ -20,8 +20,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountTree
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.Hub
+import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
@@ -31,6 +33,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -41,6 +44,7 @@ import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -71,6 +75,7 @@ import io.github.kotlinflow.models.KotlinFlowTheme
 import io.github.kotlinflow.models.Node
 import io.github.kotlinflow.models.XYPosition
 import io.github.kotlinflow.types.BackgroundVariant
+import io.github.kotlinflow.types.ColorMode
 import io.github.kotlinflow.types.EdgeChange
 import io.github.kotlinflow.types.HandleType
 import io.github.kotlinflow.types.NodeChange
@@ -96,12 +101,35 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            MaterialTheme(colorScheme = lightColorScheme(primary = Color(0xFF1E88E5))) {
+            var isDarkTheme by remember { mutableStateOf(false) }
+
+            MaterialTheme(
+                colorScheme = if (isDarkTheme) {
+                    darkColorScheme(
+                        primary = Color(0xFF00E5FF),
+                        background = Color(0xFF121212),
+                        surface = Color(0xFF1E1E1E),
+                        onBackground = Color.White,
+                        onSurface = Color.White
+                    )
+                } else {
+                    lightColorScheme(
+                        primary = Color(0xFF1E88E5),
+                        background = Color(0xFFF8F9FA),
+                        surface = Color.White,
+                        onBackground = Color.Black,
+                        onSurface = Color.Black
+                    )
+                }
+            ) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    KotlinFlowSampleApp()
+                    KotlinFlowSampleApp(
+                        isDarkTheme = isDarkTheme,
+                        onToggleTheme = { isDarkTheme = !isDarkTheme }
+                    )
                 }
             }
         }
@@ -110,7 +138,10 @@ class MainActivity : ComponentActivity() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun KotlinFlowSampleApp() {
+fun KotlinFlowSampleApp(
+    isDarkTheme: Boolean,
+    onToggleTheme: () -> Unit
+) {
     var selectedTab by remember { mutableStateOf(0) }
     val tabs = listOf("Interactive Canvas", "Auto Layout", "JSON Serialization")
 
@@ -123,34 +154,57 @@ fun KotlinFlowSampleApp() {
                             text = "KotlinFlow",
                             fontWeight = FontWeight.Bold,
                             fontSize = 20.sp,
-                            color = Color(0xFF1E88E5)
+                            color = if (isDarkTheme) Color(0xFF00E5FF) else Color(0xFF1E88E5)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "for Android (SwiftFlow Parity)",
+                            text = "for Android",
                             fontSize = 14.sp,
-                            color = Color.Gray
+                            color = if (isDarkTheme) Color(0xFF90A4AE) else Color.Gray
                         )
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White)
+                actions = {
+                    IconButton(onClick = onToggleTheme) {
+                        Icon(
+                            imageVector = if (isDarkTheme) Icons.Default.LightMode else Icons.Default.DarkMode,
+                            contentDescription = if (isDarkTheme) "Switch to Light Mode" else "Switch to Dark Mode",
+                            tint = if (isDarkTheme) Color(0xFFFFD54F) else Color(0xFF5C6BC0)
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = if (isDarkTheme) Color(0xFF1E1E1E) else Color.White
+                )
             )
         }
     ) { innerPadding ->
         Column(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
-            TabRow(selectedTabIndex = selectedTab) {
+            TabRow(
+                selectedTabIndex = selectedTab,
+                containerColor = if (isDarkTheme) Color(0xFF1E1E1E) else Color.White
+            ) {
                 tabs.forEachIndexed { index, title ->
                     Tab(
                         selected = selectedTab == index,
                         onClick = { selectedTab = index },
-                        text = { Text(title) }
+                        text = {
+                            Text(
+                                text = title,
+                                color = if (selectedTab == index) {
+                                    if (isDarkTheme) Color(0xFF00E5FF) else Color(0xFF1E88E5)
+                                } else {
+                                    if (isDarkTheme) Color(0xFF888888) else Color.Gray
+                                }
+                            )
+                        }
                     )
                 }
             }
 
             when (selectedTab) {
-                0 -> InteractiveCanvasDemo()
-                1 -> AutoLayoutDemo()
+                0 -> InteractiveCanvasDemo(isDarkTheme = isDarkTheme)
+                1 -> AutoLayoutDemo(isDarkTheme = isDarkTheme)
                 2 -> SerializationDemo()
             }
         }
@@ -158,7 +212,7 @@ fun KotlinFlowSampleApp() {
 }
 
 @Composable
-fun InteractiveCanvasDemo() {
+fun InteractiveCanvasDemo(isDarkTheme: Boolean) {
     var nodes by remember {
         mutableStateOf(
             listOf(
@@ -239,6 +293,7 @@ fun InteractiveCanvasDemo() {
             onConnect = { edges = addEdge(it, edges) },
             backgroundVariant = backgroundVariant,
             snapToGrid = false,
+            colorMode = if (isDarkTheme) ColorMode.DARK else ColorMode.LIGHT,
             kotlinFlowInstance = flowInstance,
             overlay = {
                 // Controls panel (+, -, 100%, fit, lock)
@@ -250,7 +305,9 @@ fun InteractiveCanvasDemo() {
                 // Top Panel with variant toggle
                 Panel(position = PanelPosition.TOP_RIGHT) {
                     Card(
-                        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.95f)),
+                        colors = CardDefaults.cardColors(
+                            containerColor = if (isDarkTheme) Color(0xFF262626).copy(alpha = 0.95f) else Color.White.copy(alpha = 0.95f)
+                        ),
                         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
                     ) {
                         Row(modifier = Modifier.padding(6.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -274,13 +331,13 @@ fun InteractiveCanvasDemo() {
                 }
             }
         ) { node ->
-            CustomNodeCard(node = node)
+            CustomNodeCard(node = node, isDarkTheme = isDarkTheme)
         }
     }
 }
 
 @Composable
-fun CustomNodeCard(node: Node<SampleNodeData>) {
+fun CustomNodeCard(node: Node<SampleNodeData>, isDarkTheme: Boolean = false) {
     val headerColor = when (node.type) {
         "input" -> Color(0xFF4CAF50)
         "process" -> Color(0xFF1E88E5)
@@ -294,7 +351,9 @@ fun CustomNodeCard(node: Node<SampleNodeData>) {
             .width(180.dp)
             .shadow(4.dp, RoundedCornerShape(8.dp)),
         shape = RoundedCornerShape(8.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+        colors = CardDefaults.cardColors(
+            containerColor = if (isDarkTheme) Color(0xFF262626) else Color.White
+        )
     ) {
         Column {
             // Header bar
@@ -334,7 +393,7 @@ fun CustomNodeCard(node: Node<SampleNodeData>) {
                 Text(
                     text = node.data.description,
                     fontSize = 11.sp,
-                    color = Color.DarkGray,
+                    color = if (isDarkTheme) Color(0xFFB0BEC5) else Color.DarkGray,
                     modifier = Modifier.weight(1f)
                 )
 
@@ -355,7 +414,7 @@ fun CustomNodeCard(node: Node<SampleNodeData>) {
 }
 
 @Composable
-fun AutoLayoutDemo() {
+fun AutoLayoutDemo(isDarkTheme: Boolean = false) {
     var nodes by remember {
         mutableStateOf(
             listOf(
@@ -417,15 +476,23 @@ fun AutoLayoutDemo() {
                 edges = edges,
                 onNodesChange = { nodes = applyNodeChanges(it, nodes) },
                 backgroundVariant = BackgroundVariant.LINES,
+                colorMode = if (isDarkTheme) ColorMode.DARK else ColorMode.LIGHT,
                 kotlinFlowInstance = instance
             ) { node ->
                 Card(
                     modifier = Modifier.width(100.dp).padding(4.dp),
                     shape = RoundedCornerShape(6.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFFF0F4F8))
+                    colors = CardDefaults.cardColors(
+                        containerColor = if (isDarkTheme) Color(0xFF262626) else Color(0xFFF0F4F8)
+                    )
                 ) {
                     Box(modifier = Modifier.fillMaxWidth().padding(8.dp), contentAlignment = Alignment.Center) {
-                        Text(node.data, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                        Text(
+                            text = node.data,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 12.sp,
+                            color = if (isDarkTheme) Color.White else Color.Black
+                        )
                     }
                 }
             }
