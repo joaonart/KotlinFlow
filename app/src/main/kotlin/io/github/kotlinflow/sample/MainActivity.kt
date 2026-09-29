@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -17,6 +18,8 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountTree
@@ -26,6 +29,7 @@ import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.Hub
@@ -34,6 +38,9 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Storage
+import androidx.compose.material.icons.filled.Tune
+import androidx.compose.material.icons.filled.ViewCompact
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -41,6 +48,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -60,6 +68,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -176,7 +185,8 @@ fun KotlinFlowSampleApp(
     isDarkTheme: Boolean,
     onToggleTheme: () -> Unit
 ) {
-    var selectedTab by remember { mutableStateOf(0) }
+    var selectedTab by rememberSaveable { mutableStateOf(0) }
+    var isConfigPanelOpen by rememberSaveable { mutableStateOf(false) }
     val tabs = listOf("Interactive Canvas", "Auto Layout", "JSON Serialization")
 
     Scaffold(
@@ -199,6 +209,19 @@ fun KotlinFlowSampleApp(
                     }
                 },
                 actions = {
+                    if (selectedTab == 0) {
+                        IconButton(onClick = { isConfigPanelOpen = !isConfigPanelOpen }) {
+                            Icon(
+                                imageVector = Icons.Default.Tune,
+                                contentDescription = if (isConfigPanelOpen) "Close Settings Panel" else "Open Settings Panel",
+                                tint = if (isConfigPanelOpen) {
+                                    if (isDarkTheme) Color(0xFF00E5FF) else Color(0xFF1E88E5)
+                                } else {
+                                    if (isDarkTheme) Color(0xFF90A4AE) else Color(0xFF546E7A)
+                                }
+                            )
+                        }
+                    }
                     IconButton(onClick = onToggleTheme) {
                         Icon(
                             imageVector = if (isDarkTheme) Icons.Default.LightMode else Icons.Default.DarkMode,
@@ -237,7 +260,11 @@ fun KotlinFlowSampleApp(
             }
 
             when (selectedTab) {
-                0 -> InteractiveCanvasDemo(isDarkTheme = isDarkTheme)
+                0 -> InteractiveCanvasDemo(
+                    isDarkTheme = isDarkTheme,
+                    isConfigPanelOpen = isConfigPanelOpen,
+                    onCloseConfigPanel = { isConfigPanelOpen = false }
+                )
                 1 -> AutoLayoutDemo(isDarkTheme = isDarkTheme)
                 2 -> SerializationDemo()
             }
@@ -246,34 +273,39 @@ fun KotlinFlowSampleApp(
 }
 
 @Composable
-fun InteractiveCanvasDemo(isDarkTheme: Boolean) {
-    var isN8nView by remember { mutableStateOf(false) }
+fun InteractiveCanvasDemo(
+    isDarkTheme: Boolean,
+    isConfigPanelOpen: Boolean = false,
+    onCloseConfigPanel: () -> Unit = {}
+) {
+    var isN8nView by rememberSaveable { mutableStateOf(false) }
+    var isCompactNodes by rememberSaveable { mutableStateOf(false) }
 
-    // Standard DAG pipeline nodes
+    // Standard DAG pipeline nodes (symmetrically balanced diamond layout)
     var standardNodes by remember {
         mutableStateOf(
             listOf(
                 Node(
                     id = "1",
-                    position = XYPosition(60f, 400f),
+                    position = XYPosition(60f, 360f),
                     data = SampleNodeData("Input Data", "Initial event stream", "input"),
                     type = "input"
                 ),
                 Node(
                     id = "2",
-                    position = XYPosition(620f, 180f),
-                    data = SampleNodeData("Data Processing", "Transforms & validates payload", "process"),
+                    position = XYPosition(700f, 140f),
+                    data = SampleNodeData("Data Processing", "Transform & validate payload", "process"),
                     type = "process"
                 ),
                 Node(
                     id = "3",
-                    position = XYPosition(620f, 620f),
-                    data = SampleNodeData("Filter", "Discards invalid records", "filter"),
+                    position = XYPosition(700f, 580f),
+                    data = SampleNodeData("Filter", "Discard invalid records", "filter"),
                     type = "filter"
                 ),
                 Node(
                     id = "4",
-                    position = XYPosition(1180f, 400f),
+                    position = XYPosition(1340f, 360f),
                     data = SampleNodeData("Output Target", "Sinks to storage or API", "output"),
                     type = "output"
                 )
@@ -296,9 +328,9 @@ fun InteractiveCanvasDemo(isDarkTheme: Boolean) {
                     id = "e1-3",
                     source = "1",
                     target = "3",
-                    type = EdgeType.SMOOTHSTEP,
+                    animated = true,
                     label = "raw stream",
-                    markerEnd = EdgeMarker.Arrow
+                    markerEnd = EdgeMarker.ArrowClosed
                 ),
                 Edge<EmptyEdgeData>(
                     id = "e2-4",
@@ -311,32 +343,33 @@ fun InteractiveCanvasDemo(isDarkTheme: Boolean) {
                     id = "e3-4",
                     source = "3",
                     target = "4",
-                    type = EdgeType.SMOOTHSTEP,
+                    animated = true,
                     markerEnd = EdgeMarker.ArrowClosed
                 )
             )
         )
     }
 
-    // n8n workflow nodes and edges
+    // n8n workflow nodes and edges (clean 3-column automation layout with ruler-straight parallel paths)
     var n8nNodes by remember {
         mutableStateOf(
             listOf(
                 Node(
                     id = "n8n-1",
-                    position = XYPosition(60f, 440f),
+                    position = XYPosition(60f, 430f),
                     data = N8nNodeData(
                         title = "Webhook Trigger",
                         subtitle = "POST /v1/incoming-lead",
                         nodeType = N8nNodeType.TRIGGER,
-                        status = "Active",
-                        itemsCount = 1
+                        status = "Listening",
+                        itemsCount = 1,
+                        executionTime = "instant"
                     ),
                     type = "n8n"
                 ),
                 Node(
                     id = "n8n-2",
-                    position = XYPosition(850f, 200f),
+                    position = XYPosition(840f, 180f),
                     data = N8nNodeData(
                         title = "Gemini AI Agent",
                         subtitle = "Extract & score intent",
@@ -349,19 +382,20 @@ fun InteractiveCanvasDemo(isDarkTheme: Boolean) {
                 ),
                 Node(
                     id = "n8n-3",
-                    position = XYPosition(850f, 680f),
+                    position = XYPosition(840f, 680f),
                     data = N8nNodeData(
                         title = "Router (IF)",
                         subtitle = "lead_score >= 80",
                         nodeType = N8nNodeType.CONDITION,
                         status = "Evaluated",
-                        itemsCount = 1
+                        itemsCount = 1,
+                        executionTime = "2ms"
                     ),
                     type = "n8n"
                 ),
                 Node(
                     id = "n8n-4",
-                    position = XYPosition(1640f, 200f),
+                    position = XYPosition(1620f, 180f),
                     data = N8nNodeData(
                         title = "PostgreSQL DB",
                         subtitle = "Insert into crm_leads",
@@ -374,7 +408,7 @@ fun InteractiveCanvasDemo(isDarkTheme: Boolean) {
                 ),
                 Node(
                     id = "n8n-5",
-                    position = XYPosition(1640f, 680f),
+                    position = XYPosition(1620f, 680f),
                     data = N8nNodeData(
                         title = "Slack Alert",
                         subtitle = "Notify #vip-deals",
@@ -404,7 +438,6 @@ fun InteractiveCanvasDemo(isDarkTheme: Boolean) {
                     id = "n-e1-3",
                     source = "n8n-1",
                     target = "n8n-3",
-                    type = EdgeType.SMOOTHSTEP,
                     animated = true,
                     label = "1 item",
                     markerEnd = EdgeMarker.ArrowClosed
@@ -421,7 +454,6 @@ fun InteractiveCanvasDemo(isDarkTheme: Boolean) {
                     id = "n-e3-5",
                     source = "n8n-3",
                     target = "n8n-5",
-                    type = EdgeType.SMOOTHSTEP,
                     animated = true,
                     label = "true (qualified)",
                     markerEnd = EdgeMarker.ArrowClosed
@@ -430,11 +462,11 @@ fun InteractiveCanvasDemo(isDarkTheme: Boolean) {
         )
     }
 
-    var backgroundVariant by remember { mutableStateOf(BackgroundVariant.DOTS) }
+    var backgroundVariant by rememberSaveable { mutableStateOf(BackgroundVariant.DOTS) }
     val flowInstance = remember { KotlinFlowInstance() }
 
-    // Re-frame view smoothly whenever switching between Standard and n8n views
-    LaunchedEffect(isN8nView) {
+    // Re-frame view smoothly whenever switching between Standard and n8n views or compact mode
+    LaunchedEffect(isN8nView, isCompactNodes) {
         delay(120)
         if (isN8nView) {
             flowInstance.fitView(n8nNodes)
@@ -450,109 +482,201 @@ fun InteractiveCanvasDemo(isDarkTheme: Boolean) {
         // MiniMap overview
         MiniMap(position = PanelPosition.BOTTOM_RIGHT)
 
-        // Top Panel with n8n View switch & variant toggle
-        Panel(position = PanelPosition.TOP_RIGHT) {
-            Card(
-                colors = CardDefaults.cardColors(
-                    containerColor = if (isDarkTheme) Color(0xFF262626).copy(alpha = 0.95f) else Color.White.copy(alpha = 0.95f)
-                ),
-                elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Column(
-                    modifier = Modifier.padding(10.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+        // Top Panel with n8n View switch, compact switch & variant toggle (shown when activated via top bar config button)
+        if (isConfigPanelOpen) {
+            Panel(position = PanelPosition.TOP_RIGHT) {
+                Card(
+                    colors = CardDefaults.cardColors(
+                        containerColor = if (isDarkTheme) Color(0xFF262626).copy(alpha = 0.95f) else Color.White.copy(alpha = 0.95f)
+                    ),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+                    shape = RoundedCornerShape(14.dp),
+                    border = BorderStroke(1.dp, if (isDarkTheme) Color(0xFF3E3E3E) else Color(0xFFE2E8F0))
                 ) {
-                    // n8n Workflow Switch Row
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
+                    Column(
+                        modifier = Modifier.padding(12.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
+                        // Header with Title and Close button
                         Row(
+                            modifier = Modifier.fillMaxWidth(),
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(26.dp)
-                                    .background(
-                                        color = Color(0xFFFF5D44),
-                                        shape = RoundedCornerShape(6.dp)
-                                    ),
-                                contentAlignment = Alignment.Center
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
                             ) {
                                 Icon(
-                                    imageVector = Icons.Default.Bolt,
-                                    contentDescription = "n8n Mode",
-                                    tint = Color.White,
-                                    modifier = Modifier.size(16.dp)
+                                    imageVector = Icons.Default.Tune,
+                                    contentDescription = null,
+                                    tint = if (isDarkTheme) Color(0xFF00E5FF) else Color(0xFF1E88E5),
+                                    modifier = Modifier.size(18.dp)
                                 )
-                            }
-                            Column {
                                 Text(
-                                    text = "n8n Mode",
-                                    fontSize = 12.sp,
+                                    text = "Flow Settings",
                                     fontWeight = FontWeight.Bold,
+                                    fontSize = 13.sp,
                                     color = if (isDarkTheme) Color.White else Color(0xFF1E293B)
                                 )
-                                Text(
-                                    text = if (isN8nView) "Automation Nodes" else "Standard Flow",
-                                    fontSize = 10.sp,
-                                    color = if (isDarkTheme) Color(0xFF94A3B8) else Color(0xFF64748B)
+                            }
+                            IconButton(
+                                onClick = onCloseConfigPanel,
+                                modifier = Modifier.size(24.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Close,
+                                    contentDescription = "Close settings",
+                                    tint = if (isDarkTheme) Color(0xFF90A4AE) else Color(0xFF64748B),
+                                    modifier = Modifier.size(16.dp)
                                 )
                             }
                         }
 
-                        Spacer(modifier = Modifier.width(12.dp))
+                        HorizontalDivider(
+                            color = if (isDarkTheme) Color(0xFF3E3E3E) else Color(0xFFE2E8F0),
+                            thickness = 0.5.dp
+                        )
 
-                        Switch(
-                            checked = isN8nView,
-                            onCheckedChange = { checked ->
-                                isN8nView = checked
-                            },
-                            modifier = Modifier.scale(0.85f),
-                            colors = SwitchDefaults.colors(
-                                checkedThumbColor = Color.White,
-                                checkedTrackColor = Color(0xFFFF5D44),
-                                uncheckedTrackColor = if (isDarkTheme) Color(0xFF3E3E3E) else Color(0xFFE2E8F0)
+                        // Row 1: n8n Workflow Switch
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(26.dp)
+                                        .background(
+                                            color = Color(0xFFFF5D44),
+                                            shape = RoundedCornerShape(6.dp)
+                                        ),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Bolt,
+                                        contentDescription = "n8n Mode",
+                                        tint = Color.White,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                }
+                                Column {
+                                    Text(
+                                        text = "n8n Mode",
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = if (isDarkTheme) Color.White else Color(0xFF1E293B)
+                                    )
+                                    Text(
+                                        text = if (isN8nView) "Automation Nodes" else "Standard Flow",
+                                        fontSize = 10.sp,
+                                        color = if (isDarkTheme) Color(0xFF94A3B8) else Color(0xFF64748B)
+                                    )
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.width(12.dp))
+
+                            Switch(
+                                checked = isN8nView,
+                                onCheckedChange = { checked ->
+                                    isN8nView = checked
+                                },
+                                modifier = Modifier.scale(0.85f),
+                                colors = SwitchDefaults.colors(
+                                    checkedThumbColor = Color.White,
+                                    checkedTrackColor = Color(0xFFFF5D44),
+                                    uncheckedTrackColor = if (isDarkTheme) Color(0xFF3E3E3E) else Color(0xFFE2E8F0)
+                                )
                             )
-                        )
-                    }
+                        }
 
-                    // Divider
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(0.5.dp)
-                            .background(if (isDarkTheme) Color(0xFF3E3E3E) else Color(0xFFE2E8F0))
-                    )
+                        // Row 2: Compact Nodes Switch
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(26.dp)
+                                        .background(
+                                            color = if (isDarkTheme) Color(0xFF3B82F6).copy(alpha = 0.25f) else Color(0xFFDBEAFE),
+                                            shape = RoundedCornerShape(6.dp)
+                                        ),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.ViewCompact,
+                                        contentDescription = "Compact Nodes",
+                                        tint = Color(0xFF3B82F6),
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                }
+                                Column {
+                                    Text(
+                                        text = "Compact Nodes",
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = if (isDarkTheme) Color.White else Color(0xFF1E293B)
+                                    )
+                                    Text(
+                                        text = if (isCompactNodes) "High-density view" else "Detailed view",
+                                        fontSize = 10.sp,
+                                        color = if (isDarkTheme) Color(0xFF94A3B8) else Color(0xFF64748B)
+                                    )
+                                }
+                            }
 
-                    // Canvas Background Variants
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(4.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        FilterChip(
-                            selected = backgroundVariant == BackgroundVariant.DOTS,
-                            onClick = { backgroundVariant = BackgroundVariant.DOTS },
-                            label = { Text("Dots", fontSize = 11.sp) }
+                            Spacer(modifier = Modifier.width(12.dp))
+
+                            Switch(
+                                checked = isCompactNodes,
+                                onCheckedChange = { checked ->
+                                    isCompactNodes = checked
+                                },
+                                modifier = Modifier.scale(0.85f),
+                                colors = SwitchDefaults.colors(
+                                    checkedThumbColor = Color.White,
+                                    checkedTrackColor = Color(0xFF3B82F6),
+                                    uncheckedTrackColor = if (isDarkTheme) Color(0xFF3E3E3E) else Color(0xFFE2E8F0)
+                                )
+                            )
+                        }
+
+                        // Divider
+                        HorizontalDivider(
+                            color = if (isDarkTheme) Color(0xFF3E3E3E) else Color(0xFFE2E8F0),
+                            thickness = 0.5.dp
                         )
-                        FilterChip(
-                            selected = backgroundVariant == BackgroundVariant.LINES,
-                            onClick = { backgroundVariant = BackgroundVariant.LINES },
-                            label = { Text("Lines", fontSize = 11.sp) }
-                        )
-                        FilterChip(
-                            selected = backgroundVariant == BackgroundVariant.CROSS,
-                            onClick = { backgroundVariant = BackgroundVariant.CROSS },
-                            label = { Text("Cross", fontSize = 11.sp) }
-                        )
-                        FilterChip(
-                            selected = backgroundVariant == BackgroundVariant.NONE,
-                            onClick = { backgroundVariant = BackgroundVariant.NONE },
-                            label = { Text("None", fontSize = 11.sp) }
-                        )
+
+                        // Canvas Background Variants
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            BackgroundVariant.values().forEach { variant ->
+                                val label = when (variant) {
+                                    BackgroundVariant.DOTS -> "Dots"
+                                    BackgroundVariant.LINES -> "Lines"
+                                    BackgroundVariant.CROSS -> "Cross"
+                                    BackgroundVariant.NONE -> "None"
+                                }
+                                FilterChip(
+                                    selected = backgroundVariant == variant,
+                                    onClick = { backgroundVariant = variant },
+                                    label = { Text(label, fontSize = 11.sp) }
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -574,7 +698,7 @@ fun InteractiveCanvasDemo(isDarkTheme: Boolean) {
                 kotlinFlowInstance = flowInstance,
                 overlay = overlayContent
             ) { node ->
-                N8nNodeCard(node = node, isDarkTheme = isDarkTheme)
+                N8nNodeCard(node = node, isDarkTheme = isDarkTheme, isCompact = isCompactNodes)
             }
         } else {
             KotlinFlow(
@@ -590,181 +714,280 @@ fun InteractiveCanvasDemo(isDarkTheme: Boolean) {
                 kotlinFlowInstance = flowInstance,
                 overlay = overlayContent
             ) { node ->
-                CustomNodeCard(node = node, isDarkTheme = isDarkTheme)
+                CustomNodeCard(node = node, isDarkTheme = isDarkTheme, isCompact = isCompactNodes)
             }
         }
     }
 }
 
 @Composable
-fun N8nNodeCard(node: Node<N8nNodeData>, isDarkTheme: Boolean = false) {
+fun N8nNodeCard(
+    node: Node<N8nNodeData>,
+    isDarkTheme: Boolean = false,
+    isCompact: Boolean = false
+) {
     val data = node.data
     val cardBg = if (isDarkTheme) Color(0xFF1E222D) else Color.White
     val cardBorder = if (isDarkTheme) Color(0xFF333B4F) else Color(0xFFE2E8F0)
     val titleColor = if (isDarkTheme) Color.White else Color(0xFF0F172A)
     val subtitleColor = if (isDarkTheme) Color(0xFF94A3B8) else Color(0xFF64748B)
 
-    Box(
-        modifier = Modifier.width(230.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .shadow(6.dp, RoundedCornerShape(12.dp))
-                .border(1.dp, cardBorder, RoundedCornerShape(12.dp)),
-            shape = RoundedCornerShape(12.dp),
-            colors = CardDefaults.cardColors(containerColor = cardBg)
+    if (isCompact) {
+        // High-density compact n8n pill node
+        Box(
+            modifier = Modifier.width(150.dp),
+            contentAlignment = Alignment.Center
         ) {
-            Column(modifier = Modifier.padding(12.dp)) {
-                // Top section: Icon + Labels
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(38.dp)
+                    .shadow(3.dp, RoundedCornerShape(8.dp))
+                    .border(1.dp, cardBorder, RoundedCornerShape(8.dp)),
+                shape = RoundedCornerShape(8.dp),
+                colors = CardDefaults.cardColors(containerColor = cardBg)
+            ) {
                 Row(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 8.dp),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    // Node Type Icon Box (n8n signature colored square with rounded corners)
                     Box(
                         modifier = Modifier
-                            .size(38.dp)
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(data.nodeType.accentColor.copy(alpha = if (isDarkTheme) 0.25f else 0.15f))
-                            .border(1.dp, data.nodeType.accentColor.copy(alpha = 0.4f), RoundedCornerShape(8.dp)),
+                            .size(24.dp)
+                            .clip(RoundedCornerShape(5.dp))
+                            .background(data.nodeType.accentColor.copy(alpha = if (isDarkTheme) 0.3f else 0.18f)),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = data.nodeType.icon,
                             contentDescription = null,
                             tint = data.nodeType.accentColor,
-                            modifier = Modifier.size(20.dp)
+                            modifier = Modifier.size(14.dp)
                         )
                     }
 
-                    Column(modifier = Modifier.weight(1f)) {
-                        // Category Tag
+                    Text(
+                        text = data.title,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 11.sp,
+                        color = titleColor,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f)
+                    )
+
+                    // Mini status dot
+                    Box(
+                        modifier = Modifier
+                            .size(6.dp)
+                            .background(Color(0xFF10B981), CircleShape)
+                    )
+                }
+            }
+
+            // Target handle (in) on the left border - only for non-triggers
+            if (data.nodeType != N8nNodeType.TRIGGER) {
+                Handle(
+                    nodeId = node.id,
+                    id = "in",
+                    type = HandleType.TARGET,
+                    position = Position.LEFT,
+                    color = data.nodeType.accentColor,
+                    size = 10.dp,
+                    borderColor = cardBg,
+                    borderWidth = 2.dp,
+                    modifier = Modifier
+                        .align(Alignment.CenterStart)
+                        .offset(x = (-5).dp)
+                )
+            }
+
+            // Source handle (out) on the right border
+            Handle(
+                nodeId = node.id,
+                id = "out",
+                type = HandleType.SOURCE,
+                position = Position.RIGHT,
+                color = data.nodeType.accentColor,
+                size = 10.dp,
+                borderColor = cardBg,
+                borderWidth = 2.dp,
+                modifier = Modifier
+                    .align(Alignment.CenterEnd)
+                    .offset(x = 5.dp)
+            )
+        }
+    } else {
+        // Detailed n8n card
+        Box(
+            modifier = Modifier.width(230.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .shadow(6.dp, RoundedCornerShape(12.dp))
+                    .border(1.dp, cardBorder, RoundedCornerShape(12.dp)),
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(containerColor = cardBg)
+            ) {
+                Column(modifier = Modifier.padding(12.dp)) {
+                    // Top section: Icon + Labels
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        // Node Type Icon Box (n8n signature colored square with rounded corners)
+                        Box(
+                            modifier = Modifier
+                                .size(38.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(data.nodeType.accentColor.copy(alpha = if (isDarkTheme) 0.25f else 0.15f))
+                                .border(1.dp, data.nodeType.accentColor.copy(alpha = 0.4f), RoundedCornerShape(8.dp)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = data.nodeType.icon,
+                                contentDescription = null,
+                                tint = data.nodeType.accentColor,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+
+                        Column(modifier = Modifier.weight(1f)) {
+                            // Category Tag
+                            Box(
+                                modifier = Modifier
+                                    .background(
+                                        data.nodeType.accentColor.copy(alpha = 0.2f),
+                                        RoundedCornerShape(4.dp)
+                                    )
+                                    .padding(horizontal = 4.dp, vertical = 1.dp)
+                            ) {
+                                Text(
+                                    text = data.nodeType.badgeLabel,
+                                    fontSize = 8.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = data.nodeType.accentColor
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = data.title,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 13.sp,
+                                color = titleColor,
+                                maxLines = 1
+                            )
+                            Text(
+                                text = data.subtitle,
+                                fontSize = 11.sp,
+                                color = subtitleColor,
+                                maxLines = 1
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    // Divider line
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(0.5.dp)
+                            .background(if (isDarkTheme) Color(0xFF2A2E3D) else Color(0xFFF1F5F9))
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    // Bottom Status Bar: Success checkmark + Items pill
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.CheckCircle,
+                                contentDescription = null,
+                                tint = Color(0xFF10B981),
+                                modifier = Modifier.size(12.dp)
+                            )
+                            Text(
+                                text = if (data.executionTime != null) "${data.status} • ${data.executionTime}" else data.status,
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = Color(0xFF10B981)
+                            )
+                        }
+
+                        // Output items count badge (e.g., "1 item", "5 items")
                         Box(
                             modifier = Modifier
                                 .background(
-                                    data.nodeType.accentColor.copy(alpha = 0.2f),
+                                    if (isDarkTheme) Color(0xFF064E3B).copy(alpha = 0.6f) else Color(0xFFD1FAE5),
                                     RoundedCornerShape(4.dp)
                                 )
-                                .padding(horizontal = 4.dp, vertical = 1.dp)
+                                .padding(horizontal = 6.dp, vertical = 2.dp)
                         ) {
                             Text(
-                                text = data.nodeType.badgeLabel,
-                                fontSize = 8.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = data.nodeType.accentColor
+                                text = "${data.itemsCount} item",
+                                fontSize = 9.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = if (isDarkTheme) Color(0xFF6EE7B7) else Color(0xFF047857)
                             )
                         }
-                        Spacer(modifier = Modifier.height(2.dp))
-                        Text(
-                            text = data.title,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 13.sp,
-                            color = titleColor,
-                            maxLines = 1
-                        )
-                        Text(
-                            text = data.subtitle,
-                            fontSize = 11.sp,
-                            color = subtitleColor,
-                            maxLines = 1
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(10.dp))
-
-                // Divider line
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(0.5.dp)
-                        .background(if (isDarkTheme) Color(0xFF2A2E3D) else Color(0xFFF1F5F9))
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // Bottom Status Bar: Success checkmark + Items pill
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.CheckCircle,
-                            contentDescription = null,
-                            tint = Color(0xFF10B981),
-                            modifier = Modifier.size(12.dp)
-                        )
-                        Text(
-                            text = if (data.executionTime != null) "${data.status} • ${data.executionTime}" else data.status,
-                            fontSize = 10.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = Color(0xFF10B981)
-                        )
-                    }
-
-                    // Output items count badge (e.g., "1 item", "5 items")
-                    Box(
-                        modifier = Modifier
-                            .background(
-                                if (isDarkTheme) Color(0xFF064E3B).copy(alpha = 0.6f) else Color(0xFFD1FAE5),
-                                RoundedCornerShape(4.dp)
-                            )
-                            .padding(horizontal = 6.dp, vertical = 2.dp)
-                    ) {
-                        Text(
-                            text = "${data.itemsCount} item",
-                            fontSize = 9.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = if (isDarkTheme) Color(0xFF6EE7B7) else Color(0xFF047857)
-                        )
                     }
                 }
             }
-        }
 
-        // Target handle (in) on the left border - only for non-triggers
-        if (data.nodeType != N8nNodeType.TRIGGER) {
+            // Target handle (in) on the left border - only for non-triggers
+            if (data.nodeType != N8nNodeType.TRIGGER) {
+                Handle(
+                    nodeId = node.id,
+                    id = "in",
+                    type = HandleType.TARGET,
+                    position = Position.LEFT,
+                    color = data.nodeType.accentColor,
+                    size = 12.dp,
+                    borderColor = cardBg,
+                    borderWidth = 2.dp,
+                    modifier = Modifier
+                        .align(Alignment.CenterStart)
+                        .offset(x = (-6).dp)
+                )
+            }
+
+            // Source handle (out) on the right border
             Handle(
                 nodeId = node.id,
-                id = "in",
-                type = HandleType.TARGET,
-                position = Position.LEFT,
+                id = "out",
+                type = HandleType.SOURCE,
+                position = Position.RIGHT,
                 color = data.nodeType.accentColor,
                 size = 12.dp,
                 borderColor = cardBg,
                 borderWidth = 2.dp,
                 modifier = Modifier
-                    .align(Alignment.CenterStart)
-                    .offset(x = (-6).dp)
+                    .align(Alignment.CenterEnd)
+                    .offset(x = 6.dp)
             )
         }
-
-        // Source handle (out) on the right border
-        Handle(
-            nodeId = node.id,
-            id = "out",
-            type = HandleType.SOURCE,
-            position = Position.RIGHT,
-            color = data.nodeType.accentColor,
-            size = 12.dp,
-            borderColor = cardBg,
-            borderWidth = 2.dp,
-            modifier = Modifier
-                .align(Alignment.CenterEnd)
-                .offset(x = 6.dp)
-        )
     }
 }
 
 @Composable
-fun CustomNodeCard(node: Node<SampleNodeData>, isDarkTheme: Boolean = false) {
+fun CustomNodeCard(
+    node: Node<SampleNodeData>,
+    isDarkTheme: Boolean = false,
+    isCompact: Boolean = false
+) {
     val headerColor = when (node.type) {
         "input" -> Color(0xFF4CAF50)
         "process" -> Color(0xFF1E88E5)
@@ -772,81 +995,157 @@ fun CustomNodeCard(node: Node<SampleNodeData>, isDarkTheme: Boolean = false) {
         "output" -> Color(0xFF8E24AA)
         else -> Color.Gray
     }
+    val cardBg = if (isDarkTheme) Color(0xFF262626) else Color.White
+    val cardBorder = if (isDarkTheme) Color(0xFF3E3E3E) else Color(0xFFE2E8F0)
 
-    Box(
-        modifier = Modifier.width(180.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .shadow(4.dp, RoundedCornerShape(8.dp)),
-            shape = RoundedCornerShape(8.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = if (isDarkTheme) Color(0xFF262626) else Color.White
-            )
+    if (isCompact) {
+        Box(
+            modifier = Modifier.width(140.dp),
+            contentAlignment = Alignment.Center
         ) {
-            Column {
-                // Header bar
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(headerColor)
-                        .padding(horizontal = 12.dp, vertical = 6.dp)
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(36.dp)
+                    .shadow(3.dp, RoundedCornerShape(8.dp))
+                    .border(1.dp, cardBorder, RoundedCornerShape(8.dp)),
+                shape = RoundedCornerShape(8.dp),
+                colors = CardDefaults.cardColors(containerColor = cardBg)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
+                    Box(
+                        modifier = Modifier
+                            .width(5.dp)
+                            .fillMaxHeight()
+                            .background(headerColor)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = node.data.title,
-                        color = Color.White,
                         fontWeight = FontWeight.Bold,
-                        fontSize = 12.sp
-                    )
-                }
-
-                // Body
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 12.dp, vertical = 10.dp)
-                ) {
-                    Text(
-                        text = node.data.description,
                         fontSize = 11.sp,
-                        color = if (isDarkTheme) Color(0xFFB0BEC5) else Color.DarkGray
+                        color = if (isDarkTheme) Color.White else Color(0xFF1E293B),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.padding(end = 8.dp)
                     )
                 }
             }
-        }
 
-        // Target handle (in) on the left border, perfectly centered vertically
-        if (node.type != "input") {
-            Handle(
-                nodeId = node.id,
-                id = "in",
-                type = HandleType.TARGET,
-                position = Position.LEFT,
-                color = headerColor,
-                size = 12.dp,
-                borderColor = if (isDarkTheme) Color(0xFF1E1E1E) else Color.White,
-                modifier = Modifier
-                    .align(Alignment.CenterStart)
-                    .offset(x = (-6).dp)
-            )
-        }
+            // Target handle (in) on the left border, perfectly centered vertically
+            if (node.type != "input") {
+                Handle(
+                    nodeId = node.id,
+                    id = "in",
+                    type = HandleType.TARGET,
+                    position = Position.LEFT,
+                    color = headerColor,
+                    size = 10.dp,
+                    borderColor = cardBg,
+                    borderWidth = 2.dp,
+                    modifier = Modifier
+                        .align(Alignment.CenterStart)
+                        .offset(x = (-5).dp)
+                )
+            }
 
-        // Source handle (out) on the right border, perfectly centered vertically
-        if (node.type != "output") {
-            Handle(
-                nodeId = node.id,
-                id = "out",
-                type = HandleType.SOURCE,
-                position = Position.RIGHT,
-                color = headerColor,
-                size = 12.dp,
-                borderColor = if (isDarkTheme) Color(0xFF1E1E1E) else Color.White,
+            // Source handle (out) on the right border, perfectly centered vertically
+            if (node.type != "output") {
+                Handle(
+                    nodeId = node.id,
+                    id = "out",
+                    type = HandleType.SOURCE,
+                    position = Position.RIGHT,
+                    color = headerColor,
+                    size = 10.dp,
+                    borderColor = cardBg,
+                    borderWidth = 2.dp,
+                    modifier = Modifier
+                        .align(Alignment.CenterEnd)
+                        .offset(x = 5.dp)
+                )
+            }
+        }
+    } else {
+        // Detailed card
+        Box(
+            modifier = Modifier.width(180.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Card(
                 modifier = Modifier
-                    .align(Alignment.CenterEnd)
-                    .offset(x = 6.dp)
-            )
+                    .fillMaxWidth()
+                    .shadow(4.dp, RoundedCornerShape(8.dp)),
+                shape = RoundedCornerShape(8.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = cardBg
+                )
+            ) {
+                Column {
+                    // Header bar
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(headerColor)
+                            .padding(horizontal = 12.dp, vertical = 6.dp)
+                    ) {
+                        Text(
+                            text = node.data.title,
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 12.sp
+                        )
+                    }
+
+                    // Body
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 12.dp, vertical = 10.dp)
+                    ) {
+                        Text(
+                            text = node.data.description,
+                            fontSize = 11.sp,
+                            color = if (isDarkTheme) Color(0xFFB0BEC5) else Color.DarkGray
+                        )
+                    }
+                }
+            }
+
+            // Target handle (in) on the left border, perfectly centered vertically
+            if (node.type != "input") {
+                Handle(
+                    nodeId = node.id,
+                    id = "in",
+                    type = HandleType.TARGET,
+                    position = Position.LEFT,
+                    color = headerColor,
+                    size = 12.dp,
+                    borderColor = cardBg,
+                    modifier = Modifier
+                        .align(Alignment.CenterStart)
+                        .offset(x = (-6).dp)
+                )
+            }
+
+            // Source handle (out) on the right border, perfectly centered vertically
+            if (node.type != "output") {
+                Handle(
+                    nodeId = node.id,
+                    id = "out",
+                    type = HandleType.SOURCE,
+                    position = Position.RIGHT,
+                    color = headerColor,
+                    size = 12.dp,
+                    borderColor = cardBg,
+                    modifier = Modifier
+                        .align(Alignment.CenterEnd)
+                        .offset(x = 6.dp)
+                )
+            }
         }
     }
 }
