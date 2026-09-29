@@ -1,0 +1,40 @@
+name: Deploy GitHub Pages
+
+on:
+  # Allows manual execution from the GitHub Actions tab ("Run workflow" button)
+  workflow_dispatch:
+  
+  # Automatically deploys when changes are pushed to docs/ on main
+  push:
+    branches:
+      - main
+    paths:
+      - 'docs/**'
+      - '.github/workflows/deploy-pages.yml'
+
+# Permissions required to push the built docs to the gh-pages branch
+permissions:
+  contents: write
+
+concurrency:
+  group: 'gh-pages'
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Deploy Docs to GitHub Pages
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Deploy docs directory to gh-pages branch
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs
+          keep_files: false
+          commit_message: "deploy(docs): update GitHub Pages from ${{ github.sha }}"
