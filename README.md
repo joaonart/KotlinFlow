@@ -6,6 +6,27 @@ KotlinFlow brings full-featured node-based graph editing to Android apps. Design
 
 ---
 
+## Visual Showcase
+
+Experience KotlinFlow running natively on Android with hardware-accelerated pan & zoom, custom node cards, auto-layout algorithms, and dynamic light/dark theming:
+
+| **Interactive Canvas (Light Mode)** | **n8n Automation Mode (Dark Mode)** |
+|:---:|:---:|
+| <img src="assets/interactive_canvas_standard.png" width="360" alt="KotlinFlow Interactive Canvas in Light Mode" /> | <img src="assets/n8n_mode_dark.png" width="360" alt="KotlinFlow n8n Automation Mode in Dark Mode" /> |
+| *Standard DAG flow with connection handles, edge labels, MiniMap & Controls* | *n8n-style workflow with execution status badges, metric pills & bezier curves* |
+
+| **High-Density Compact Nodes** | **Live Flow Settings & Background Patterns** |
+|:---:|:---:|
+| <img src="assets/compact_nodes_view.png" width="360" alt="KotlinFlow High-Density Compact Nodes" /> | <img src="assets/flow_settings_panel.png" width="360" alt="KotlinFlow Settings Panel and Grid Patterns" /> |
+| *High-density layout ideal for complex pipelines and microservice architectures* | *Interactive settings panel with live grid pattern toggles (Dots, Lines, Cross, None)* |
+
+<p align="center">
+  <img src="assets/auto_layout_demo.png" width="360" alt="KotlinFlow Automatic Graph Layout Engine" /><br />
+  <em><b>Automatic Graph Layout Engine</b>: Hierarchical Tree (L-to-R / T-to-B), Grid, and physics-based Force-Directed layout</em>
+</p>
+
+---
+
 ## Features
 
 - **1:1 SwiftFlow API Parity**: Includes direct `SwiftFlow*` aliases (`SwiftFlow`, `SwiftFlowState`, `SwiftFlowStore`, `SwiftFlowInstance`, `SwiftFlowTheme`, `SwiftFlowDocument`, `FlowEdge`) for seamless code porting and mental model continuity.
@@ -25,13 +46,17 @@ KotlinFlow brings full-featured node-based graph editing to Android apps. Design
   - Edge labels with custom rendering support (`EdgeLabelRenderer` and `EdgeText`).
 - **Complete Suite of Graph Components**:
   - `Handle`: Source and target connection pins with configurable positions (`TOP`, `BOTTOM`, `LEFT`, `RIGHT`) and connection limit constraints.
-  - `Background`: Built-in canvas patterns: **Dots**, **Lines**, and **Cross** with dynamic scale and gap synchronization.
+  - `Background`: Built-in canvas patterns: **Dots**, **Lines**, **Cross**, and **None** with dynamic scale and gap synchronization.
   - `Controls` & `ControlButton`: Floating zoom in/out, fit view, and interactive mode toggles.
   - `MiniMap`: Interactive overview thumbnail with real-time node positions and draggable viewport window.
   - `Panel`: Overlay panels positioned at `TOP_LEFT`, `TOP_RIGHT`, `BOTTOM_LEFT`, or `BOTTOM_RIGHT`.
   - `NodeToolbar` & `EdgeToolbar`: Floating contextual action bars aligned above/below selected nodes and edges.
   - `NodeResizer`: Draggable 8-direction bounding box handles for dynamic node resizing.
   - `ViewportPortal`: Render arbitrary Jetpack Compose components anchored in graph coordinate space.
+- **Rich Visual Modes**:
+  - **n8n Automation Workflows**: Specialized automation cards featuring execution status indicators (Listening, Success, Evaluated, Sent), execution duration metrics, item counts, and status pills.
+  - **High-Density Compact Nodes**: Compact representation for dense enterprise topologies and extensive decision trees.
+  - **Dynamic Theming**: Seamless switching between **Light** and **Dark** color modes with adaptive node borders, shadow elevation, and connection handle contrast.
 - **Built-in Auto Layout Engine**:
   - **Tree Layout**: Breadth-First Search layout supporting `TOP_TO_BOTTOM`, `BOTTOM_TO_TOP`, `LEFT_TO_RIGHT`, and `RIGHT_TO_LEFT` hierarchies.
   - **Force-Directed Layout**: Dynamic physics simulation using Coulomb electrostatic repulsion and Hooke spring attraction.
@@ -39,6 +64,8 @@ KotlinFlow brings full-featured node-based graph editing to Android apps. Design
 - **JSON Graph Serialization**:
   - Full serialization of graph documents via `KotlinFlowDocument` using `kotlinx.serialization`.
   - Helper utilities: `toJSON()`, `toJSONString()`, `fromJSON()`, and `fromJSONString()`.
+- **AI Agent & LLM Ready**:
+  - Detailed system prompt instructions, architectural conventions, and code templates for AI coding assistants (Claude Code, Codex, Cursor, Gemini CLI) in [AGENTS.md](AGENTS.md).
 
 ---
 

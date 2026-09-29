@@ -467,7 +467,7 @@ fun InteractiveCanvasDemo(
 
     // Re-frame view smoothly whenever switching between Standard and n8n views or compact mode
     LaunchedEffect(isN8nView, isCompactNodes) {
-        delay(120)
+        delay(300)
         if (isN8nView) {
             flowInstance.fitView(n8nNodes)
         } else {
@@ -1177,6 +1177,17 @@ fun AutoLayoutDemo(isDarkTheme: Boolean = false) {
 
     val instance = remember { KotlinFlowInstance() }
 
+    LaunchedEffect(Unit) {
+        val changes = computeAutoLayout(
+            nodes,
+            edges,
+            LayoutAlgorithm.Tree(LayoutDirection.LEFT_TO_RIGHT, nodeSpacing = 140f, levelSpacing = 360f)
+        )
+        nodes = applyNodeChanges(changes, nodes)
+        delay(300)
+        instance.fitView(nodes)
+    }
+
     Column(modifier = Modifier.fillMaxSize()) {
         Row(
             modifier = Modifier
@@ -1185,26 +1196,43 @@ fun AutoLayoutDemo(isDarkTheme: Boolean = false) {
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Button(onClick = {
-                val changes = computeAutoLayout(nodes, edges, LayoutAlgorithm.Tree(LayoutDirection.TOP_TO_BOTTOM))
+                val changes = computeAutoLayout(
+                    nodes,
+                    edges,
+                    LayoutAlgorithm.Tree(LayoutDirection.TOP_TO_BOTTOM, nodeSpacing = 160f, levelSpacing = 240f)
+                )
                 nodes = applyNodeChanges(changes, nodes)
                 instance.fitView(nodes)
             }) {
                 Text("Tree (Vertical)", fontSize = 12.sp)
             }
             Button(onClick = {
-                val changes = computeAutoLayout(nodes, edges, LayoutAlgorithm.Tree(LayoutDirection.LEFT_TO_RIGHT))
+                val changes = computeAutoLayout(
+                    nodes,
+                    edges,
+                    LayoutAlgorithm.Tree(LayoutDirection.LEFT_TO_RIGHT, nodeSpacing = 140f, levelSpacing = 360f)
+                )
                 nodes = applyNodeChanges(changes, nodes)
                 instance.fitView(nodes)
             }) {
                 Text("Tree (Horizontal)", fontSize = 12.sp)
             }
             Button(onClick = {
-                val changes = computeAutoLayout(nodes, edges, LayoutAlgorithm.Grid(columns = 3))
+                val changes = computeAutoLayout(
+                    nodes,
+                    edges,
+                    LayoutAlgorithm.Grid(columns = 3, nodeSpacing = 180f)
+                )
                 nodes = applyNodeChanges(changes, nodes)
                 instance.fitView(nodes)
             }) {
                 Text("Grid", fontSize = 12.sp)
             }
+        }
+
+        val overlayContent: @Composable () -> Unit = {
+            Controls(position = PanelPosition.BOTTOM_LEFT)
+            MiniMap(position = PanelPosition.BOTTOM_RIGHT)
         }
 
         Box(modifier = Modifier.fillMaxSize().weight(1f)) {
@@ -1214,21 +1242,57 @@ fun AutoLayoutDemo(isDarkTheme: Boolean = false) {
                 onNodesChange = { nodes = applyNodeChanges(it, nodes) },
                 backgroundVariant = BackgroundVariant.LINES,
                 colorMode = if (isDarkTheme) ColorMode.DARK else ColorMode.LIGHT,
-                kotlinFlowInstance = instance
+                kotlinFlowInstance = instance,
+                overlay = overlayContent
             ) { node ->
-                Card(
-                    modifier = Modifier.width(100.dp).padding(4.dp),
-                    shape = RoundedCornerShape(6.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = if (isDarkTheme) Color(0xFF262626) else Color(0xFFF0F4F8)
-                    )
-                ) {
-                    Box(modifier = Modifier.fillMaxWidth().padding(8.dp), contentAlignment = Alignment.Center) {
-                        Text(
-                            text = node.data,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 12.sp,
-                            color = if (isDarkTheme) Color.White else Color.Black
+                Box(contentAlignment = Alignment.Center) {
+                    if (node.id != "root") {
+                        Handle(
+                            nodeId = node.id,
+                            id = "in",
+                            type = HandleType.TARGET,
+                            position = Position.LEFT,
+                            color = Color(0xFF00BCD4),
+                            size = 10.dp,
+                            modifier = Modifier
+                                .align(Alignment.CenterStart)
+                                .offset(x = (-5).dp)
+                        )
+                    }
+                    Card(
+                        modifier = Modifier.width(110.dp).padding(horizontal = 6.dp, vertical = 4.dp),
+                        shape = RoundedCornerShape(8.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = if (isDarkTheme) Color(0xFF1E293B) else Color(0xFFF1F5F9)
+                        ),
+                        border = androidx.compose.foundation.BorderStroke(
+                            1.dp,
+                            if (isDarkTheme) Color(0xFF334155) else Color(0xFFCBD5E1)
+                        )
+                    ) {
+                        Box(
+                            modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 10.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = node.data,
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 13.sp,
+                                color = if (isDarkTheme) Color.White else Color(0xFF0F172A)
+                            )
+                        }
+                    }
+                    if (node.id != "leaf1" && node.id != "leaf2" && node.id != "leaf3") {
+                        Handle(
+                            nodeId = node.id,
+                            id = "out",
+                            type = HandleType.SOURCE,
+                            position = Position.RIGHT,
+                            color = Color(0xFF10B981),
+                            size = 10.dp,
+                            modifier = Modifier
+                                .align(Alignment.CenterEnd)
+                                .offset(x = 5.dp)
                         )
                     }
                 }
