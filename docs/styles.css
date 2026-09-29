@@ -991,7 +991,49 @@ body {
   border-bottom: none;
 }
 
-/* Responsive */
+.mobile-nav-extras {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.mobile-nav-extra-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: var(--bg-surface-elevated);
+  transition: color 0.2s, background 0.2s;
+}
+
+.mobile-nav-extra-link:hover {
+  color: var(--text-main);
+  background: var(--border-subtle);
+}
+
+.mobile-nav-extra-link svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+/* ==========================================================================
+   Comprehensive Responsive Breakpoints (Desktop, Tablet, Mobile)
+   ========================================================================== */
+@media (max-width: 992px) {
+  .hero-title {
+    font-size: 2.8rem;
+  }
+}
+
 @media (max-width: 768px) {
   .nav-menu {
     display: none;
@@ -1005,13 +1047,81 @@ body {
   .btn-search-trigger {
     padding: 8px 10px;
   }
+  .hero {
+    padding: 48px 0 36px;
+  }
   .hero-title {
-    font-size: 2.1rem;
+    font-size: 2.15rem;
   }
   .features-grid {
     grid-template-columns: 1fr;
   }
   #interactive-canvas {
     height: 420px;
+  }
+  .code-tabs-header {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .code-tabs-header::-webkit-scrollbar {
+    display: none;
+  }
+  .code-tab {
+    white-space: nowrap;
+    padding: 10px 14px;
+    font-size: 0.8rem;
+  }
+  .canvas-status {
+    display: none;
+  }
+}
+
+@media (max-width: 580px) {
+  .container {
+    padding: 0 16px;
+  }
+  .navbar .container {
+    height: 64px;
+  }
+  .brand-icon {
+    width: 32px;
+    height: 32px;
+  }
+  .brand-link span:first-of-type {
+    font-size: 1.15rem;
+  }
+  /* On small phones, tuck external links into mobile drawer to keep header clean */
+  .nav-actions a[title="View on Maven Central"],
+  .nav-actions a[title="GitHub Repository"] {
+    display: none;
+  }
+  .hero-title {
+    font-size: 1.85rem;
+  }
+  .hero-subtitle {
+    font-size: 0.95rem;
+  }
+  .showcase-tabs {
+    gap: 6px;
+  }
+  .showcase-tab {
+    padding: 7px 12px;
+    font-size: 0.8rem;
+  }
+  .device-frame {
+    border-width: 6px;
+    border-radius: 26px;
+  }
+  .feature-card {
+    padding: 22px;
+  }
+  .footer-top {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .footer-links {
+    flex-wrap: wrap;
+    gap: 16px;
   }
 }

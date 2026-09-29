@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
     mobileNavDrawer?.classList.toggle('open');
   });
 
-  document.querySelectorAll('.mobile-nav-link').forEach(link => {
+  document.querySelectorAll('.mobile-nav-link, .mobile-nav-extra-link').forEach(link => {
     link.addEventListener('click', () => {
       mobileNavDrawer?.classList.remove('open');
     });
