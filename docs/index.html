@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KotlinFlow — Native Jetpack Compose Graph & Workflow Canvas</title>
+  <meta name="description" content="A faithful, highly optimized Android port of SwiftFlow (and inspired by ReactFlow) built natively with Jetpack Compose.">
+  
+  <!-- OpenGraph / Social Media -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="KotlinFlow — Jetpack Compose Graph Canvas">
+  <meta property="og:description" content="Interactive node-based graph & workflow editor for Android. Fluid gestures, auto-layout, interactive edges, and n8n visual workflows.">
+  <meta property="og:image" content="assets/n8n_mode_vertical.png">
+  <meta name="theme-color" content="#7F52FF">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%237F52FF'><path d='M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5'/></svg>">
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Ambient Background Lighting -->
+  <div class="ambient-glow"></div>
+  <div class="ambient-grid"></div>
+
+  <!-- Top Navigation (VitePress Style) -->
+  <header class="navbar">
+    <div class="container">
+      <a href="#hero" class="brand-link">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          </svg>
+        </div>
+        <span>KotlinFlow</span>
+      </a>
+
+      <nav>
+        <ul class="nav-menu">
+          <li><a href="#showcase" class="nav-link">Showcase</a></li>
+          <li><a href="#features" class="nav-link">Features</a></li>
+          <li><a href="#quickstart" class="nav-link">Getting Started</a></li>
+          <li><a href="#api" class="nav-link">API Reference</a></li>
+          <li><a href="#agents" class="nav-link">AI Agents</a></li>
+        </ul>
+      </nav>
+
+      <div class="nav-actions">
+        <!-- Search Trigger (Cmd + K) -->
+        <button class="btn-search-trigger" id="search-trigger" title="Search documentation (Cmd+K / Ctrl+K)">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <span class="search-text">Search</span>
+          <kbd class="search-kbd">⌘K</kbd>
+        </button>
+
+        <!-- Theme Toggle -->
+        <button class="btn-icon" id="theme-toggle" aria-label="Toggle dark/light theme" title="Toggle theme">
+          <svg class="icon-sun" viewBox="0 0 24 24">
+            <path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          </svg>
+          <svg class="icon-moon" viewBox="0 0 24 24" style="display: none;">
+            <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          </svg>
+        </button>
+
+        <!-- Maven Central Badge Link -->
+        <a href="https://central.sonatype.com/artifact/io.github.joaonart/kotlinflow" target="_blank" rel="noopener" class="btn-icon" title="View on Maven Central">
+          <svg viewBox="0 0 24 24">
+            <path d="M12 2L3 7v10l9 5 9-5V7l-9-5zm0 2.2l6.8 3.8L12 11.8 5.2 8 12 4.2zm-7 5.2l6 3.3v7.3l-6-3.3V9.4zm8 10.6v-7.3l6-3.3v7.3l-6 3.3z" fill="currentColor"/>
+          </svg>
+        </a>
+
+        <!-- GitHub Repo Link -->
+        <a href="https://github.com/joaonart/KotlinFlow" target="_blank" rel="noopener" class="btn-icon" title="GitHub Repository">
+          <svg viewBox="0 0 24 24">
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" fill="currentColor"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <main>
+    <section class="hero" id="hero">
+      <div class="container">
+        <!-- Live Maven Central Pill -->
+        <a href="https://central.sonatype.com/artifact/io.github.joaonart/kotlinflow" target="_blank" rel="noopener" class="hero-pill">
+          <span class="pulse-dot"></span>
+          <span>v1.0.0 is live on Maven Central</span>
+          <span style="opacity: 0.6;">→</span>
+        </a>
+
+        <h1 class="hero-title">
+          Graph & Workflow Canvas for <br/>
+          <span class="gradient-text">Jetpack Compose</span>
+        </h1>
+
+        <p class="hero-subtitle">
+          A faithful, highly optimized Android port of <strong>SwiftFlow</strong> (and inspired by ReactFlow). 
+          Build interactive node diagrams, AI agent pipelines, and dense topology editors with fluid 120fps pan & zoom, 
+          multi-algorithm auto-layout, and customizable connection pins.
+        </p>
+
+        <div class="hero-cta">
+          <a href="#quickstart" class="btn btn-primary">
+            <span>Get Started</span>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </a>
+          <a href="#showcase" class="btn btn-secondary">
+            <span>Explore Visual Modes</span>
+          </a>
+          <a href="https://github.com/joaonart/KotlinFlow" target="_blank" rel="noopener" class="btn btn-secondary">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+              <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
+            </svg>
+            <span>GitHub ⭐</span>
+          </a>
+        </div>
+
+        <!-- Interactive Hero Canvas Playground -->
+        <div class="hero-canvas-wrapper">
+          <div class="canvas-toolbar">
+            <div class="window-dots">
+              <span class="window-dot red"></span>
+              <span class="window-dot yellow"></span>
+              <span class="window-dot green"></span>
+            </div>
+            <div class="canvas-status">Interactive Preview: Drag nodes to test real-time edge routing</div>
+            <button class="btn-copy" id="btn-reset-canvas" title="Reset node positions">Reset Canvas</button>
+          </div>
+          <canvas id="interactive-canvas"></canvas>
+          <div class="canvas-hint">💡 Drag any node to test reactive bezier curves with live pulse particles</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Visual Showcase Section -->
+    <section class="section" id="showcase">
+      <div class="container">
+        <div class="section-header">
+          <div class="section-tag">Visual Showcase</div>
+          <h2 class="section-title">Engineered for Any Diagram Complexity</h2>
+          <p class="section-desc">
+            Explore native Android screenshots captured directly from our sample showcase running on Android 15.
+          </p>
+        </div>
+
+        <!-- Tabs -->
+        <div class="showcase-tabs">
+          <button class="showcase-tab active" data-img="assets/n8n_mode_vertical.png" data-caption="Vertical n8n pipeline: top-to-bottom reading scale optimized for mobile portrait screens with branch routing.">Vertical n8n (Mobile)</button>
+          <button class="showcase-tab" data-img="assets/n8n_mode_dark.png" data-caption="Horizontal n8n mode: full desktop-style automation canvas with status badges and metric pills.">Horizontal n8n (Dark)</button>
+          <button class="showcase-tab" data-img="assets/interactive_canvas_standard.png" data-caption="Standard Interactive Canvas in Light Mode with MiniMap, Controls, and live connection dragging.">Interactive Canvas (Light)</button>
+          <button class="showcase-tab" data-img="assets/compact_nodes_view.png" data-caption="High-density compact nodes view: ideal for large enterprise topologies and complex decision trees.">Compact Nodes</button>
+          <button class="showcase-tab" data-img="assets/flow_settings_panel.png" data-caption="Live Flow Settings: configure grid patterns (Dots, Lines, Cross, None), snapping, and dark/light mode.">Flow Settings</button>
+          <button class="showcase-tab" data-img="assets/auto_layout_demo.png" data-caption="Automatic Graph Layout Engine: BFS Tree (Top-to-Bottom / Left-to-Right), Grid, and Force-Directed physics.">Auto-Layout Engine</button>
+        </div>
+
+        <!-- Device Mockup View -->
+        <div class="showcase-frame-container">
+          <div class="device-frame">
+            <img id="showcase-img" src="assets/n8n_mode_vertical.png" alt="KotlinFlow Showcase Screen">
+          </div>
+        </div>
+        <p class="showcase-caption" id="showcase-caption">
+          Vertical n8n pipeline: top-to-bottom reading scale optimized for mobile portrait screens with branch routing.
+        </p>
+      </div>
+    </section>
+
+    <!-- Features Section (VitePress 3x2 Grid) -->
+    <section class="section" id="features">
+      <div class="container">
+        <div class="section-header">
+          <div class="section-tag">Features</div>
+          <h2 class="section-title">Everything You Need for Native Diagrams</h2>
+          <p class="section-desc">
+            Designed to match SwiftFlow 1:1 while leveraging Android's Jetpack Compose architecture for maximum performance.
+          </p>
+        </div>
+
+        <div class="features-grid">
+          <!-- Feature 1 -->
+          <div class="feature-card">
+            <div class="feature-icon">
+              <svg viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+            </div>
+            <h3>Jetpack Compose Native</h3>
+            <p>
+              Hardware-accelerated canvas rendering with zero view hierarchy overhead. Smooth 60/120fps pan, pinch-to-zoom, double-tap zoom, and hardware layering.
+            </p>
+          </div>
+
+          <!-- Feature 2 -->
+          <div class="feature-card">
+            <div class="feature-icon">
+              <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+            </div>
+            <h3>1:1 SwiftFlow API Parity</h3>
+            <p>
+              Provides direct <code>SwiftFlow*</code> typealiases (<code>SwiftFlow</code>, <code>SwiftFlowState</code>, <code>SwiftFlowDocument</code>, <code>FlowEdge</code>) for seamless mental models and cross-platform porting.
+            </p>
+          </div>
+
+          <!-- Feature 3 -->
+          <div class="feature-card">
+            <div class="feature-icon">
+              <svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+            </div>
+            <h3>Auto-Layout Engine</h3>
+            <p>
+              Built-in layout algorithms: Hierarchical BFS Tree (Top-to-Bottom, Left-to-Right), Force-Directed physics simulation, and uniform Matrix Grid.
+            </p>
+          </div>
+
+          <!-- Feature 4 -->
+          <div class="feature-card">
+            <div class="feature-icon">
+              <svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+            </div>
+            <h3>Flexible Edge Routing</h3>
+            <p>
+              Supports <strong>Bezier</strong>, <strong>Straight</strong>, <strong>Step</strong>, <strong>SmoothStep</strong>, and <strong>SimpleBezier</strong> routes with animated dashed current lines and arrow markers.
+            </p>
+          </div>
+
+          <!-- Feature 5 -->
+          <div class="feature-card">
+            <div class="feature-icon">
+              <svg viewBox="0 0 24 24"><path d="M20 7h-7L10 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2z"/></svg>
+            </div>
+            <h3>n8n Visual Workflows</h3>
+            <p>
+              Specialized execution status cards (Listening, Success, Evaluated, Sent) with execution duration metrics, item counts, and mobile-first vertical flow support.
+            </p>
+          </div>
+
+          <!-- Feature 6 -->
+          <div class="feature-card">
+            <div class="feature-icon">
+              <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14l-5-5 1.41-1.41L12 14.17l7.59-7.59L21 8l-9 9z"/></svg>
+            </div>
+            <h3>JSON Serialization</h3>
+            <p>
+              Full graph document serialization with <code>kotlinx.serialization</code>. Save, export, and load complete graph topologies with <code>toJSONString()</code> and <code>fromJSONString()</code>.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Quickstart & Installation Section -->
+    <section class="section" id="quickstart">
+      <div class="container">
+        <div class="section-header">
+          <div class="section-tag">Quickstart</div>
+          <h2 class="section-title">Get Started in Seconds</h2>
+          <p class="section-desc">
+            Add KotlinFlow to your Android app using Maven Central or JitPack.
+          </p>
+        </div>
+
+        <div class="code-box-wrapper">
+          <div class="code-tabs-header">
+            <div class="code-tabs">
+              <button class="code-tab active" data-target="tab-gradle-kts">build.gradle.kts</button>
+              <button class="code-tab" data-target="tab-catalog">libs.versions.toml</button>
+              <button class="code-tab" data-target="tab-groovy">build.gradle (Groovy)</button>
+              <button class="code-tab" data-target="tab-compose">MainActivity.kt</button>
+            </div>
+            <button class="btn-copy" id="btn-copy-code" title="Copy code snippet">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+              <span>Copy</span>
+            </button>
+          </div>
+
+          <!-- Code Panes -->
+          <div class="code-pane active" id="tab-gradle-kts">
+<pre><code><span class="code-comment">// app/build.gradle.kts</span>
+<span class="code-fn">dependencies</span> {
+    <span class="code-comment">// Official release published on Maven Central</span>
+    <span class="code-fn">implementation</span>(<span class="code-string">"io.github.joaonart:kotlinflow:1.0.0"</span>)
+}</code></pre>
+          </div>
+
+          <div class="code-pane" id="tab-catalog">
+<pre><code><span class="code-comment"># gradle/libs.versions.toml</span>
+[<span class="code-keyword">versions</span>]
+<span class="code-fn">kotlinflow</span> = <span class="code-string">"1.0.0"</span>
+
+[<span class="code-keyword">libraries</span>]
+<span class="code-fn">kotlinflow</span> = { <span class="code-param">group</span> = <span class="code-string">"io.github.joaonart"</span>, <span class="code-param">name</span> = <span class="code-string">"kotlinflow"</span>, <span class="code-param">version.ref</span> = <span class="code-string">"kotlinflow"</span> }</code></pre>
+          </div>
+
+          <div class="code-pane" id="tab-groovy">
+<pre><code><span class="code-comment">// app/build.gradle (Groovy DSL)</span>
+dependencies {
+    implementation <span class="code-string">'io.github.joaonart:kotlinflow:1.0.0'</span>
+}</code></pre>
+          </div>
+
+          <div class="code-pane" id="tab-compose">
+<pre><code><span class="code-keyword">import</span> androidx.compose.runtime.*
+<span class="code-keyword">import</span> io.github.kotlinflow.*
+<span class="code-keyword">import</span> io.github.kotlinflow.model.*
+
+<span class="code-keyword">@Composable</span>
+<span class="code-keyword">fun</span> <span class="code-fn">MyFlowDiagram</span>() {
+    <span class="code-keyword">var</span> nodes <span class="code-keyword">by</span> <span class="code-fn">remember</span> {
+        <span class="code-fn">mutableStateOf</span>(
+            <span class="code-fn">listOf</span>(
+                <span class="code-fn">Node</span>(id = <span class="code-string">"1"</span>, position = <span class="code-fn">XYPosition</span>(100f, 100f), data = <span class="code-string">"Start"</span>),
+                <span class="code-fn">Node</span>(id = <span class="code-string">"2"</span>, position = <span class="code-fn">XYPosition</span>(100f, 300f), data = <span class="code-string">"Processing"</span>)
+            )
+        )
+    }
+    <span class="code-keyword">var</span> edges <span class="code-keyword">by</span> <span class="code-fn">remember</span> {
+        <span class="code-fn">mutableStateOf</span>(
+            <span class="code-fn">listOf</span>(
+                <span class="code-fn">FlowEdge</span>(id = <span class="code-string">"e1-2"</span>, source = <span class="code-string">"1"</span>, target = <span class="code-string">"2"</span>, animated = <span class="code-keyword">true</span>)
+            )
+        )
+    }
+
+    <span class="code-fn">KotlinFlow</span>(
+        nodes = nodes,
+        edges = edges,
+        onNodesChange = { nodes = it },
+        onEdgesChange = { edges = it }
+    ) {
+        <span class="code-fn">Background</span>(variant = <span class="code-param">BackgroundVariant.DOTS</span>)
+        <span class="code-fn">Controls</span>()
+        <span class="code-fn">MiniMap</span>()
+    }
+}</code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- API Reference Section -->
+    <section class="section" id="api">
+      <div class="container">
+        <div class="section-header">
+          <div class="section-tag">API Reference</div>
+          <h2 class="section-title">Modular Component Architecture</h2>
+          <p class="section-desc">
+            Compose rich diagram experiences using first-class declarative primitives.
+          </p>
+        </div>
+
+        <div class="components-grid">
+          <div class="component-card">
+            <h4>KotlinFlow / SwiftFlow</h4>
+            <p>Main canvas composable hosting viewport state, gesture recognizers, pan/zoom transitions, and node layer rendering.</p>
+          </div>
+
+          <div class="component-card">
+            <h4>Handle</h4>
+            <p>Connection pins (<code>SOURCE</code> or <code>TARGET</code>) positioned at <code>TOP</code>, <code>BOTTOM</code>, <code>LEFT</code>, or <code>RIGHT</code> with connection limits and validation.</p>
+          </div>
+
+          <div class="component-card">
+            <h4>Background</h4>
+            <p>Built-in canvas background patterns: <code>DOTS</code>, <code>LINES</code>, <code>CROSS</code>, and <code>NONE</code> with synchronized camera scaling.</p>
+          </div>
+
+          <div class="component-card">
+            <h4>Controls & ControlButton</h4>
+            <p>Floating utility buttons for zooming in, zooming out, fitting graph into viewport (<code>fitView</code>), and locking interactions.</p>
+          </div>
+
+          <div class="component-card">
+            <h4>MiniMap</h4>
+            <p>Interactive overview thumbnail rendering miniaturized nodes, real-time bounding boxes, and draggable viewport frames.</p>
+          </div>
+
+          <div class="component-card">
+            <h4>Auto Layout Engine</h4>
+            <p>Compute dynamic coordinates using <code>applyTreeLayout()</code>, <code>applyForceDirectedLayout()</code>, or <code>applyGridLayout()</code>.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- AI Agent Documentation Hook -->
+    <section class="section" id="agents">
+      <div class="container">
+        <div class="section-header">
+          <div class="section-tag">AI Agent Ready</div>
+          <h2 class="section-title">Built for Human & AI Pair-Programming</h2>
+          <p class="section-desc">
+            KotlinFlow includes structured context, conventions, and implementation guidelines for modern AI coding assistants (Claude Code, Cursor, Codex, Gemini).
+          </p>
+        </div>
+
+        <div class="code-box-wrapper" style="padding: 32px; text-align: center;">
+          <p style="color: var(--text-muted); margin-bottom: 20px;">
+            Point your AI tool directly to our dedicated <code>AGENTS.md</code> file for seamless integration into any Android codebase:
+          </p>
+          <a href="https://github.com/joaonart/KotlinFlow/blob/main/AGENTS.md" target="_blank" rel="noopener" class="btn btn-primary">
+            <span>Read AGENTS.md on GitHub</span>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+              <polyline points="15 3 21 3 21 9"></polyline>
+              <line x1="10" y1="14" x2="21" y2="3"></line>
+            </svg>
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Search Modal (Cmd+K) -->
+  <div class="search-modal-backdrop" id="search-modal">
+    <div class="search-modal">
+      <div class="search-modal-header">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input type="text" id="search-input" placeholder="Search documentation, components, layout..." autocomplete="off">
+        <button class="search-modal-close" id="search-close">ESC</button>
+      </div>
+      <div class="search-modal-results" id="search-results">
+        <div class="search-item" data-href="#hero">
+          <strong>KotlinFlow Overview</strong>
+          <span>Graph & workflow engine for Jetpack Compose</span>
+        </div>
+        <div class="search-item" data-href="#showcase">
+          <strong>Visual Showcase</strong>
+          <span>Vertical n8n, Horizontal n8n, Compact nodes, Grid patterns</span>
+        </div>
+        <div class="search-item" data-href="#features">
+          <strong>Features & Capabilities</strong>
+          <span>1:1 SwiftFlow parity, auto-layout, bezier edges, JSON serialization</span>
+        </div>
+        <div class="search-item" data-href="#quickstart">
+          <strong>Installation & Quickstart</strong>
+          <span>Maven Central dependency, build.gradle.kts, libs.versions.toml</span>
+        </div>
+        <div class="search-item" data-href="#api">
+          <strong>API Reference</strong>
+          <span>KotlinFlow, Handle, Background, MiniMap, Controls, Auto-Layout</span>
+        </div>
+        <div class="search-item" data-href="#agents">
+          <strong>AI Coding Assistants (AGENTS.md)</strong>
+          <span>System prompt instructions for Claude Code, Cursor, Codex, Gemini</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast" id="toast">Copied to clipboard!</div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-top">
+        <div class="brand-link">
+          <div class="brand-icon">
+            <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+          </div>
+          <span>KotlinFlow</span>
+        </div>
+
+        <ul class="footer-links">
+          <li><a href="https://central.sonatype.com/artifact/io.github.joaonart/kotlinflow" target="_blank" rel="noopener" class="footer-link">Maven Central</a></li>
+          <li><a href="https://github.com/joaonart/KotlinFlow" target="_blank" rel="noopener" class="footer-link">GitHub</a></li>
+          <li><a href="https://github.com/aaurelions/SwiftFlow" target="_blank" rel="noopener" class="footer-link">SwiftFlow (Original)</a></li>
+          <li><a href="https://github.com/joaonart/KotlinFlow/blob/main/LICENSE" target="_blank" rel="noopener" class="footer-link">MIT License</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-bottom">
+        <p>Released under the MIT License. A port of <a href="https://github.com/aaurelions/SwiftFlow" target="_blank" rel="noopener" style="color: var(--primary-light); text-decoration: none;">SwiftFlow</a> by <a href="https://github.com/aaurelions" target="_blank" rel="noopener" style="color: var(--primary-light); text-decoration: none;">@aaurelions</a>. Maintained by <a href="https://github.com/joaonart" target="_blank" rel="noopener" style="color: var(--primary-light); text-decoration: none;">@joaonart</a>.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Interactive Scripts -->
+  <script src="script.js"></script>
+</body>
+</html>
